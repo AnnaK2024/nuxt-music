@@ -5,7 +5,7 @@
         <div class="track__title">
           <div class="track__title-image">
             <svg class="track__title-svg">
-              <use xlink:href="/icons/sprite.svg#icon-note"></use>
+              <use xlink:href="/icons/sprite.svg#icon-note" />
             </svg>
           </div>
           <div class="track__title-text">
@@ -22,10 +22,14 @@
           <a class="track__album-link" href="http://">{{ track.album }}</a>
         </div>
         <div class="track__time">
-          <svg class="track__time-svg">
-            <use xlink:href="/icons/sprite.svg#icon-like"></use>
+          <svg
+            class="track__time-svg"
+            :class="{ activ: isFavorite }"
+            @click="handleToggleFavorite"
+          >
+            <use xlink:href="/icons/sprite.svg#icon-like" />
           </svg>
-          <span class="track__time-text">{{ track.time }}</span>
+          <span class="track__time-text">{{ formatDuration(track.duration_in_seconds) }}</span>
         </div>
       </div>
     </div>
@@ -33,7 +37,22 @@
 </template>
 
 <script setup>
-import { tracks } from '~/public/tracks';
+const props = defineProps({
+  track: {
+    type: Object,
+    required: true,
+  },
+});
+
+const {formatDuration, fetchTracks, tracks, loading, error } = useTracks();
+
+const handleToggleFavorite = () => {
+  toggleFavorite(props.track.id);
+};
+
+onMounted(() => {
+  fetchTracks();
+});
 </script>
 
 <style lang="scss" scoped>

@@ -11,12 +11,14 @@
       </div>
     </div>
     <div class="content__playlist playlist">
-      <TrackTrack />
+      <TrackItem/>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+
+</script>
 
 <style lang="scss" scoped>
 .centerblock__content {
