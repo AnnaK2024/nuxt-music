@@ -41,7 +41,7 @@
         :class="{ active: activeFilter === 'genre' }"
         @click="toggleFilter('genre')"
       >
-        исполнителю
+        жанру
       </div>
       <div v-show="activeFilter === 'genre'" class="filter__dropdown">
         <ul class="filter__list">
@@ -57,7 +57,12 @@
 <script setup>
 const activeFilter = ref(null);
 
-const {tracks} = useTracks()
+const { data: response } = await useFetch(
+  "https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/",
+  { transform: (response) => response.data }
+);
+
+const tracks = computed(() => response.value?.data || []);
 
 const authorItems = computed(() => {
   if (!tracks.value) return [];
@@ -106,7 +111,7 @@ const genreItems = computed(() => {
 });
 
 const toggleFilter = (filter) => {
-  console.log(filter)
+  console.log(filter);
   activeFilter.value = activeFilter.value === filter ? null : filter;
 };
 </script>

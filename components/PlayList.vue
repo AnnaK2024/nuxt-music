@@ -135,7 +135,6 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* Задержка для каждой точки */
 .loading-dots span:nth-child(1) {
   animation-delay: 0s;
 }
