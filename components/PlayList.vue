@@ -10,14 +10,27 @@
         </svg>
       </div>
     </div>
-    <div class="content__playlist playlist">
-      <TrackItem/>
+
+    <div v-if="loading" class="content__playlist playlist">
+      <div class="loading">Загрузка треков...</div>
+    </div>
+
+    <div v-else-if="error" class="content__playlist playlist">
+      <div class="error">Ошибка загрузки треков: {{ error }}</div>
+    </div>
+
+    <div v-else class="content__playlist playlist">
+      <TrackItem v-for="track in tracks" :key="track.id" :track="track" />
     </div>
   </div>
 </template>
 
 <script setup>
+const { fetchTracks, tracks, loading, error } = useTracks();
 
+onMounted(() => {
+  fetchTracks();
+});
 </script>
 
 <style lang="scss" scoped>
