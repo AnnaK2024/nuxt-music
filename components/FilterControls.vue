@@ -9,9 +9,14 @@
       >
         исполнителю
       </div>
-      <div v-show="activeFilter === 'author'" class="filter__dropdown">
+      <div v-if="activeFilter === 'author'" class="filter__dropdown">
         <ul class="filter__list">
-          <li v-for="item in authorItems" :key="item" class="filter__item">
+          <li
+            v-for="item in authorItems"
+            :key="item"
+            class="filter__item"
+            @click="toggleFilter('author')"
+          >
             {{ item }}
           </li>
         </ul>
@@ -24,11 +29,16 @@
         :class="{ active: activeFilter === 'year' }"
         @click="toggleFilter('year')"
       >
-        годам
+        году выпуска
       </div>
-      <div v-show="activeFilter === 'year'" class="filter__dropdown">
+      <div v-if="activeFilter === 'year'" class="filter__dropdown">
         <ul class="filter__list">
-          <li v-for="item in yearItems" :key="item" class="filter__item">
+          <li
+            v-for="item in yearItems"
+            :key="item"
+            class="filter__item"
+            @click="toggleFilter('year')"
+          >
             {{ item }}
           </li>
         </ul>
@@ -43,9 +53,14 @@
       >
         жанру
       </div>
-      <div v-show="activeFilter === 'genre'" class="filter__dropdown">
+      <div v-if="activeFilter === 'genre'" class="filter__dropdown">
         <ul class="filter__list">
-          <li v-for="item in genreItems" :key="item" class="filter__item">
+          <li
+            v-for="item in genreItems"
+            :key="item"
+            class="filter__item"
+            @click="toggleFilter('genre')"
+          >
             {{ item }}
           </li>
         </ul>
@@ -62,7 +77,7 @@ const { data: response } = await useFetch(
   { transform: (response) => response.data }
 );
 
-const tracks = computed(() => response.value?.data || []);
+const tracks = computed(() => response.value || []);
 
 const authorItems = computed(() => {
   if (!tracks.value) return [];
@@ -137,7 +152,9 @@ const toggleFilter = (filter) => {
   line-height: 24px;
   margin-right: 15px;
 }
-
+.filter__wrapper{
+  padding-right: 15px;
+}
 .filter__button {
   font-style: normal;
   font-weight: 400;
