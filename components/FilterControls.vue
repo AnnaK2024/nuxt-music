@@ -1,6 +1,7 @@
 <template>
   <div class="centerblock__filter filter">
     <div class="filter__title">Искать по:</div>
+
     <div class="filter__wrapper">
       <div
         class="filter__button button-author _btn-text"
@@ -9,7 +10,11 @@
       >
         исполнителю
       </div>
-      <div v-if="activeFilter === 'author'" class="filter__dropdown">
+      <div
+        v-show="activeFilter === 'author'"
+        class="filter__dropdown"
+        :class="{ active: activeFilter === 'author' }"
+      >
         <ul class="filter__list">
           <li
             v-for="item in authorItems"
@@ -31,7 +36,11 @@
       >
         году выпуска
       </div>
-      <div v-if="activeFilter === 'year'" class="filter__dropdown">
+      <div
+        v-show="activeFilter === 'year'"
+        class="filter__dropdown"
+        :class="{ active: activeFilter === 'year' }"
+      >
         <ul class="filter__list">
           <li
             v-for="item in yearItems"
@@ -53,7 +62,11 @@
       >
         жанру
       </div>
-      <div v-if="activeFilter === 'genre'" class="filter__dropdown">
+      <div
+        v-show="activeFilter === 'genre'"
+        class="filter__dropdown"
+        :class="{ active: activeFilter === 'genre' }"
+      >
         <ul class="filter__list">
           <li
             v-for="item in genreItems"
@@ -152,9 +165,82 @@ const toggleFilter = (filter) => {
   line-height: 24px;
   margin-right: 15px;
 }
-.filter__wrapper{
+.filter__wrapper {
+  position: relative;
   padding-right: 15px;
 }
+
+.filter__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000; // чтобы быть поверх других элементов
+  background: #313131; // или другой фон, подходящий под дизайн
+  border-radius: 8px;
+  max-height: 200px; // ограничиваем высоту
+  overflow-y: auto;
+  width: max-content;
+  min-width: 150px; // минимальная ширина
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.filter__wrapper .filter__dropdown.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.filter__dropdown {
+  max-height: 220px;
+  overflow-y: auto;
+  background: #222222;
+  border-radius: 10px;
+  padding-right: 8px; /* чтобы скроллбар не закрывал текст */
+}
+
+/* Стилизация скроллбара для WebKit-браузеров */
+.filter__dropdown::-webkit-scrollbar {
+  width: 6px;               /* толщина полосы прокрутки */
+}
+
+.filter__dropdown::-webkit-scrollbar-track {
+  background: #2e2e2e;      /* цвет дорожки (фон полосы) */
+  border-radius: 10px;
+}
+
+.filter__dropdown::-webkit-scrollbar-thumb {
+  background-color: #ad61ff; /* цвет "ползунка" */
+  border-radius: 10px;
+  border: 2px solid #2e2e2e; /* отступы вокруг ползунка для эффекта */
+}
+
+/* Для Firefox */
+.filter__dropdown {
+  scrollbar-width: thin;
+  scrollbar-color: #ad61ff #2e2e2e;
+}
+
+.filter__list {
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+}
+
+.filter__item {
+  padding: 8px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter__item:hover {
+  color: #b672ff;
+  text-decoration: underline;
+}
+
 .filter__button {
   font-style: normal;
   font-weight: 400;
@@ -169,8 +255,8 @@ const toggleFilter = (filter) => {
   margin-right: 10px;
 }
 ._btn-text:hover {
-  border-color: #d9b6ff;
-  color: #d9b6ff;
+  border-color: #b672ff;
+  color: #b672ff;
   cursor: pointer;
 }
 
