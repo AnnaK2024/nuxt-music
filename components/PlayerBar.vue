@@ -1,89 +1,117 @@
 <template>
   <div class="bar">
     <div class="bar__content">
-      <div class="bar__player-progress" />
+      <div class="bar__player-progress" @click="handleProgressClick">
+        <div
+          class="bar__player-progress-line"
+          :style="{ width: playerStore.progress + '%' }"
+        />
+      </div>
       <div class="bar__player-block">
         <div class="bar__player player">
           <div class="player__controls">
             <div class="player__btn-prev">
               <svg class="player__btn-prev-svg">
-                <use xlink:href="/icons/sprite.svg#icon-prev" />
+                <use xlink:href="/img/icon/sprite.svg#icon-prev" />
               </svg>
             </div>
-            <div class="player__btn-play _btn">
+            <div class="player__btn-play _btn" @click="handlePlay">
               <svg class="player__btn-play-svg">
-                <use xlink:href="/icons/sprite.svg#icon-play" />
+                <use
+                  :xlink:href="
+                    playerStore.isPlaying
+                      ? '/img/icon/sprite.svg#icon-pause'
+                      : '/img/icon/sprite.svg#icon-play'
+                  "
+                />
               </svg>
             </div>
             <div class="player__btn-next">
               <svg class="player__btn-next-svg">
-                <use xlink:href="/icons/sprite.svg#icon-next" />
+                <use xlink:href="/img/icon/sprite.svg#icon-next" />
               </svg>
             </div>
             <div class="player__btn-repeat _btn-icon">
               <svg class="player__btn-repeat-svg">
-                <use xlink:href="/icons/sprite.svg#icon-repeat" />
+                <use xlink:href="/img/icon/sprite.svg#icon-repeat" />
               </svg>
             </div>
             <div class="player__btn-shuffle _btn-icon">
               <svg class="player__btn-shuffle-svg">
-                <use xlink:href="/icons/sprite.svg#icon-shuffle" />
+                <use xlink:href="/img/icon/sprite.svg#icon-shuffle" />
               </svg>
             </div>
           </div>
-
           <div class="player__track-play track-play">
             <div class="track-play__contain">
               <div class="track-play__image">
                 <svg class="track-play__svg">
-                  <use xlink:href="/icons/sprite.svg#icon-note" />
+                  <use xlink:href="/img/icon/sprite.svg#icon-note" />
                 </svg>
               </div>
               <div class="track-play__author">
-                <a class="track-play__author-link" href="http://">Ты та...</a>
+                <a class="track-play__author-link" href="#">{{
+                  playerStore.currentTrack?.author || "Выберите трек"
+                }}</a>
               </div>
               <div class="track-play__album">
-                <a class="track-play__album-link" href="http://">Баста</a>
-              </div>
-            </div>
-
-            <div class="track-play__like-dis">
-              <div class="track-play__like _btn-icon">
-                <svg class="track-play__like-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-like" />
-                </svg>
-              </div>
-              <div class="track-play__dislike _btn-icon">
-                <svg class="track-play__dislike-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-dislike" />
-                </svg>
+                <a class="track-play__album-link" href="#">{{
+                  playerStore.currentTrack?.album || ""
+                }}</a>
               </div>
             </div>
           </div>
         </div>
-        <div class="bar__volume-block volume">
+        <div class="bar__volume-block">
           <div class="volume__content">
             <div class="volume__image">
               <svg class="volume__svg">
-                <use xlink:href="/icons/sprite.svg#icon-volume" />
+                <use xlink:href="/img/icon/sprite.svg#icon-volume" />
               </svg>
             </div>
             <div class="volume__progress _btn">
               <input
+                v-model="playerStore.volume"
                 class="volume__progress-line _btn"
                 type="range"
                 name="range"
+                min="0"
+                max="100"
+                @input="updateVolume"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <audio ref="audioRef" />
+    <audio
+      ref="audioRef"
+      @timeupdate="handleTimeUpdate"
+    />
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { usePlayerStore } from "~/stores/player";
+
+// Получаем store
+const playerStore = usePlayerStore();
+const audioRef = ref(null);
+
+// Получаем функции из composable
+const {
+  playTrack,
+  handleTimeUpdate,
+  handleTrackEnd,
+  seekTo,
+  updateVolume,
+  initPlayer,
+} = useAudioPlayer();
+
+onMounted(() => {
+  initPlayer(audioRef.value);
+});
+</script>
 
 <style lang="scss" scoped>
 .bar {

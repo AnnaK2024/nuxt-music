@@ -1,4 +1,4 @@
-
+import { usePlayerStore } from "@p/stores/player";
 
 export function useAudioPlayer() {
   // Получаем store, чтобы менять данные в хранилище
@@ -10,6 +10,7 @@ export function useAudioPlayer() {
       console.error("Плеера нет :(");
       return;
     }
+    console.log(element);
     playerStore.setAudioRef(element);
   };
 
@@ -31,25 +32,30 @@ export function useAudioPlayer() {
     }
   };
 
-// Обновляем прогресс трека
+  // Обновляем прогресс трека
   const handleTimeUpdate = () => {
     if (!playerStore.audioRef) return;
     const currentTime = playerStore.audioRef.currentTime;
     const duration = playerStore.audioRef.duration;
     console.log(duration);
     if (duration) {
-      const progress = (currentTime / duration) \* 100;
+      const progress = (currentTime / duration) * 100;
       playerStore.setProgress(progress);
     }
   };
+
+  //   Обработка окончания трека
+  //   const handleTrackEnd = () => {
+  //     playerStore.setPlaying(false)
+  //   }
+
   // Перематываем
   const seekTo = (percentage) => {
     if (!playerStore.audioRef || !playerStore.currentTrack) return;
-    const newTime = (percentage / 100) \* playerStore={}.audioRef.duration;
+    const newTime = (percentage / 100) * playerStore.audioRef.duration;
     playerStore.audioRef.currentTime = newTime;
     playerStore.setProgress(percentage);
   };
-
 
   // Меняем громкость
   const updateVolume = () => {
@@ -63,5 +69,6 @@ export function useAudioPlayer() {
     handleTimeUpdate,
     seekTo,
     updateVolume,
+    // handleTrackEnd,
   };
 }
