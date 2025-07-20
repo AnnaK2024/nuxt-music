@@ -20,8 +20,8 @@
                 <use
                   :xlink:href="
                     playerStore.isPlaying
-                      ? '/img/icon/sprite.svg#icon-pause'
-                      : '/img/icon/sprite.svg#icon-play'
+                      ? '/icons/sprite.svg#icon-pause'
+                      : '/icons/sprite.svg#icon-play'
                   "
                 />
               </svg>
