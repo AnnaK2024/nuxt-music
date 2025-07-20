@@ -12,7 +12,7 @@
           <div class="player__controls">
             <div class="player__btn-prev">
               <svg class="player__btn-prev-svg">
-                <use xlink:href="/img/icon/sprite.svg#icon-prev" />
+                <use xlink:href="/icons/sprite.svg#icon-prev" />
               </svg>
             </div>
             <div class="player__btn-play _btn" @click="handlePlay">
@@ -28,17 +28,17 @@
             </div>
             <div class="player__btn-next">
               <svg class="player__btn-next-svg">
-                <use xlink:href="/img/icon/sprite.svg#icon-next" />
+                <use xlink:href="/icons/sprite.svg#icon-next" />
               </svg>
             </div>
             <div class="player__btn-repeat _btn-icon">
               <svg class="player__btn-repeat-svg">
-                <use xlink:href="/img/icon/sprite.svg#icon-repeat" />
+                <use xlink:href="/icons/sprite.svg#icon-repeat" />
               </svg>
             </div>
             <div class="player__btn-shuffle _btn-icon">
               <svg class="player__btn-shuffle-svg">
-                <use xlink:href="/img/icon/sprite.svg#icon-shuffle" />
+                <use xlink:href="/icons/sprite.svg#icon-shuffle" />
               </svg>
             </div>
           </div>
@@ -46,7 +46,7 @@
             <div class="track-play__contain">
               <div class="track-play__image">
                 <svg class="track-play__svg">
-                  <use xlink:href="/img/icon/sprite.svg#icon-note" />
+                  <use xlink:href="/icons/sprite.svg#icon-note" />
                 </svg>
               </div>
               <div class="track-play__author">
@@ -66,7 +66,7 @@
           <div class="volume__content">
             <div class="volume__image">
               <svg class="volume__svg">
-                <use xlink:href="/img/icon/sprite.svg#icon-volume" />
+                <use xlink:href="/icons/sprite.svg#icon-volume" />
               </svg>
             </div>
             <div class="volume__progress _btn">
@@ -84,29 +84,36 @@
         </div>
       </div>
     </div>
-    <audio
-      ref="audioRef"
-      @timeupdate="handleTimeUpdate"
-    />
+    <audio ref="audioRef" @timeupdate="handleTimeUpdate" />
   </div>
 </template>
 
 <script setup>
-import { usePlayerStore } from "~/stores/player";
+import { usePlayerStore } from "@/stores/player";
+import { useAudioPlayer } from "@/composables/useAudioPlayer";
 
 // Получаем store
 const playerStore = usePlayerStore();
 const audioRef = ref(null);
 
 // Получаем функции из composable
-const {
-  playTrack,
-  handleTimeUpdate,
-  handleTrackEnd,
-  seekTo,
-  updateVolume,
-  initPlayer,
-} = useAudioPlayer();
+const { playTrack, handleTimeUpdate, seekTo, updateVolume, initPlayer } =
+  useAudioPlayer();
+
+const handlePlay = () => {
+  if (playerStore.currentTrack) {
+    playTrack(playerStore.currentTrack);
+  }
+};
+
+const handleProgressClick = (event) => {
+  const progressBar = event.currentTarget;
+  const clickPosition = event.offsetX;
+  const progressBarWidth = progressBar.offsetWidth;
+  const percentage = (clickPosition / progressBarWidth) * 100;
+
+  seekTo(percentage);
+};
 
 onMounted(() => {
   initPlayer(audioRef.value);

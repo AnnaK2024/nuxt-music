@@ -1,4 +1,4 @@
-import { usePlayerStore } from "@p/stores/player";
+import { usePlayerStore } from "@/stores/player";
 
 export function useAudioPlayer() {
   // Получаем store, чтобы менять данные в хранилище
