@@ -1,20 +1,18 @@
-import { usePlayerStore } from "@/stores/player";
+import { usePlayerStore } from "/stores/player";
 
 export function useAudioPlayer() {
-  // Получаем store, чтобы менять данные в хранилище
   const playerStore = usePlayerStore();
 
-  // Инициализируем плеер в самом начале
   const initPlayer = (element) => {
     if (!element) {
       console.error("Плеера нет :(");
       return;
     }
-    console.log(element);
     playerStore.setAudioRef(element);
+    // Устанавливаем текущую громкость при инициализации
+    playerStore.audioRef.volume = playerStore.volume / 100;
   };
 
-  // Воспроизводим трек
   const playTrack = async (track) => {
     if (!playerStore.audioRef) {
       console.error("Плеер не инициализирован");
@@ -22,34 +20,48 @@ export function useAudioPlayer() {
     }
 
     try {
-      playerStore.setCurrentTrack(track);
-      playerStore.audioRef.src = track.track_file;
-      await playerStore.audioRef.play();
-      playerStore.setPlaying(true);
+      if (playerStore.currentTrack?.id === track.id) {
+        if (playerStore.audioRef.paused) {
+          console.log("Пытаемся воспроизвести трек:", track.track_file);
+          console.log("Текущий источник:", playerStore.audioRef.src);
+
+          await playerStore.audioRef.play();
+          playerStore.setPlaying(true);
+        } else {
+          playerStore.audioRef.pause();
+          playerStore.setPlaying(false);
+        }
+      } else {
+        playerStore.setCurrentTrack(track);
+        playerStore.audioRef.src = track.track_file;
+        console.log("Пытаемся воспроизвести трек:", track.track_file);
+        console.log("Текущий источник:", playerStore.audioRef.src);
+
+        await playerStore.audioRef.play();
+        playerStore.setPlaying(true);
+      }
     } catch (error) {
       console.error("Ошибка воспроизведения:", error);
       playerStore.setPlaying(false);
     }
   };
 
-  // Обновляем прогресс трека
   const handleTimeUpdate = () => {
     if (!playerStore.audioRef) return;
     const currentTime = playerStore.audioRef.currentTime;
     const duration = playerStore.audioRef.duration;
-    console.log(duration);
-    if (duration) {
+    if (duration && !isNaN(duration)) {
       const progress = (currentTime / duration) * 100;
       playerStore.setProgress(progress);
     }
   };
 
-  //   Обработка окончания трека
-  //   const handleTrackEnd = () => {
-  //     playerStore.setPlaying(false)
-  //   }
+  const handleTrackEnd = () => {
+    playerStore.setPlaying(false);
+    playerStore.setProgress(0);
+    playerStore.playNext();
+  };
 
-  // Перематываем
   const seekTo = (percentage) => {
     if (!playerStore.audioRef || !playerStore.currentTrack) return;
     const newTime = (percentage / 100) * playerStore.audioRef.duration;
@@ -57,10 +69,11 @@ export function useAudioPlayer() {
     playerStore.setProgress(percentage);
   };
 
-  // Меняем громкость
-  const updateVolume = () => {
+  const updateVolume = (event) => {
     if (!playerStore.audioRef) return;
-    playerStore.audioRef.volume = playerStore.volume / 100;
+    const volumeValue = event.target.value;
+    playerStore.setVolume(volumeValue);
+    playerStore.audioRef.volume = volumeValue / 100;
   };
 
   return {
@@ -69,6 +82,6 @@ export function useAudioPlayer() {
     handleTimeUpdate,
     seekTo,
     updateVolume,
-    // handleTrackEnd,
+    handleTrackEnd,
   };
 }

@@ -84,21 +84,31 @@
         </div>
       </div>
     </div>
-    <audio ref="audioRef" @timeupdate="handleTimeUpdate" />
+    <audio
+      ref="audioRef"
+      @timeupdate="handleTimeUpdate"
+      @ended="handleTrackEnd"
+    />
   </div>
 </template>
 
 <script setup>
-import { usePlayerStore } from "@/stores/player";
-import { useAudioPlayer } from "@/composables/useAudioPlayer";
+import { usePlayerStore } from "~/stores/player";
+import { useAudioPlayer } from "~/composables/useAudioPlayer";
 
 // Получаем store
 const playerStore = usePlayerStore();
 const audioRef = ref(null);
 
 // Получаем функции из composable
-const { playTrack, handleTimeUpdate, seekTo, updateVolume, initPlayer } =
-  useAudioPlayer();
+const {
+  playTrack,
+  handleTimeUpdate,
+  seekTo,
+  updateVolume,
+  initPlayer,
+  handleTrackEnd,
+} = useAudioPlayer();
 
 const handlePlay = () => {
   if (playerStore.currentTrack) {

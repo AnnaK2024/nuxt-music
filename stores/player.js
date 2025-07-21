@@ -49,5 +49,24 @@ export const usePlayerStore = defineStore("player", {
         this.audioRef.volume = this.volume / 100;
       }
     },
+
+    playNext() {
+      if (!this.playlist.length) return;
+      const currentIndex = this.playlist.findIndex(
+        (t) => t.id === this.currentTrack?.id
+      );
+      const nextIndex = (currentIndex + 1) % this.playlist.length;
+      this.setCurrentTrack(this.playlist[nextIndex]);
+    },
+
+    playPrev() {
+      if (!this.playlist.length) return;
+      const currentIndex = this.playlist.findIndex(
+        (t) => t.id === this.currentTrack?.id
+      );
+      const prevIndex =
+        (currentIndex - 1 + this.playlist.length) % this.playlist.length;
+      this.setCurrentTrack(this.playlist[prevIndex]);
+    },
   },
 });
