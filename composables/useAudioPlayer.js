@@ -1,4 +1,4 @@
-import { usePlayerStore } from "/stores/player";
+import { usePlayerStore } from "~/stores/player";
 
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();

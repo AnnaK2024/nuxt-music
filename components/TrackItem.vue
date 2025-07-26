@@ -42,7 +42,7 @@ defineProps({
   },
 });
 
-const { formatDuration } = useTracks();
+const { formatDuration} = useTracks();
 
 </script>
 
