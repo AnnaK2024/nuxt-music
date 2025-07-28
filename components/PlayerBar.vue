@@ -10,7 +10,7 @@
       <div class="bar__player-block">
         <div class="bar__player player">
           <div class="player__controls">
-            <div class="player__btn-prev">
+            <div class="player__btn-prev" @click="handlePrev">
               <svg class="player__btn-prev-svg">
                 <use xlink:href="/icons/sprite.svg#icon-prev" />
               </svg>
@@ -26,17 +26,25 @@
                 />
               </svg>
             </div>
-            <div class="player__btn-next">
+            <div class="player__btn-next" @click="handleNext">
               <svg class="player__btn-next-svg">
                 <use xlink:href="/icons/sprite.svg#icon-next" />
               </svg>
             </div>
-            <div class="player__btn-repeat _btn-icon">
+            <div
+              class="player__btn-repeat _btn-icon"
+              :class="{ active: playerStore.isRepeat }"
+              @click="handleRepeatToggle"
+            >
               <svg class="player__btn-repeat-svg">
                 <use xlink:href="/icons/sprite.svg#icon-repeat" />
               </svg>
             </div>
-            <div class="player__btn-shuffle _btn-icon">
+            <div
+              class="player__btn-shuffle _btn-icon"
+              :class="{ active: playerStore.isShuffle }"
+              @click="handleShuffleToggle"
+            >
               <svg class="player__btn-shuffle-svg">
                 <use xlink:href="/icons/sprite.svg#icon-shuffle" />
               </svg>
@@ -93,25 +101,36 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
 import { usePlayerStore } from "~/stores/player";
 import { useAudioPlayer } from "~/composables/useAudioPlayer";
 
-// Получаем store
 const playerStore = usePlayerStore();
 const audioRef = ref(null);
 
-// Получаем функции из composable
 const {
+  initPlayer,
   playTrack,
-  handleTimeUpdate,
+  pause,
   seekTo,
   updateVolume,
-  initPlayer,
+  handleTimeUpdate,
   handleTrackEnd,
+  playNext,
+  playPrev,
+  toggleRepeat,
+  toggleShuffle,
 } = useAudioPlayer();
 
+onMounted(() => {
+  initPlayer(audioRef.value);
+});
+
 const handlePlay = () => {
-  if (playerStore.currentTrack) {
+  if (!playerStore.currentTrack) return;
+  if (playerStore.isPlaying) {
+    pause();
+  } else {
     playTrack(playerStore.currentTrack);
   }
 };
@@ -121,13 +140,24 @@ const handleProgressClick = (event) => {
   const clickPosition = event.offsetX;
   const progressBarWidth = progressBar.offsetWidth;
   const percentage = (clickPosition / progressBarWidth) * 100;
-
   seekTo(percentage);
 };
 
-onMounted(() => {
-  initPlayer(audioRef.value);
-});
+const handleNext = () => {
+  playNext();
+};
+
+const handlePrev = () => {
+  playPrev();
+};
+
+const handleRepeatToggle = () => {
+  toggleRepeat();
+};
+
+const handleShuffleToggle = () => {
+  toggleShuffle();
+};
 </script>
 
 <style lang="scss" scoped>

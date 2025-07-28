@@ -3,85 +3,100 @@ import { usePlayerStore } from "~/stores/player";
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
 
-  const initPlayer = (element) => {
-    if (!element) {
-      console.error("Плеера нет :(");
-      return;
-    }
-    playerStore.setAudioRef(element);
-    // Устанавливаем текущую громкость при инициализации
-    playerStore.audioRef.volume = playerStore.volume / 100;
+  const initPlayer = (audioElement) => {
+    playerStore.setAudioRef(audioElement);
   };
 
-  const playTrack = async (track) => {
-    if (!playerStore.audioRef) {
-      console.error("Плеер не инициализирован");
-      return;
+  const playTrack = (track) => {
+    if (!track) return;
+    if (playerStore.audioRef) {
+      playerStore.audioRef.src = track.url;
+      playerStore.audioRef.play();
+      playerStore.setPlaying(true);
+      playerStore.setCurrentTrack(track);
     }
+  };
 
-    try {
-      if (playerStore.currentTrack?.id === track.id) {
-        if (playerStore.audioRef.paused) {
-          console.log("Пытаемся воспроизвести трек:", track.track_file);
-          console.log("Текущий источник:", playerStore.audioRef.src);
-
-          await playerStore.audioRef.play();
-          playerStore.setPlaying(true);
-        } else {
-          playerStore.audioRef.pause();
-          playerStore.setPlaying(false);
-        }
-      } else {
-        playerStore.setCurrentTrack(track);
-        playerStore.audioRef.src = track.track_file;
-        console.log("Пытаемся воспроизвести трек:", track.track_file);
-        console.log("Текущий источник:", playerStore.audioRef.src);
-
-        await playerStore.audioRef.play();
-        playerStore.setPlaying(true);
-      }
-    } catch (error) {
-      console.error("Ошибка воспроизведения:", error);
+  const pause = () => {
+    if (playerStore.audioRef) {
+      playerStore.audioRef.pause();
       playerStore.setPlaying(false);
     }
+  };
+
+  const seekTo = (percentage) => {
+    if (!playerStore.audioRef) return;
+    const duration = playerStore.audioRef.duration;
+    if (isNaN(duration)) return;
+    playerStore.audioRef.currentTime = (percentage / 100) * duration;
+    playerStore.setProgress(percentage);
+  };
+
+  const updateVolume = (event) => {
+    const volume = event.target.value;
+    playerStore.setVolume(volume);
   };
 
   const handleTimeUpdate = () => {
     if (!playerStore.audioRef) return;
     const currentTime = playerStore.audioRef.currentTime;
     const duration = playerStore.audioRef.duration;
-    if (duration && !isNaN(duration)) {
-      const progress = (currentTime / duration) * 100;
-      playerStore.setProgress(progress);
-    }
+    if (isNaN(duration) || duration === 0) return;
+    const progress = (currentTime / duration) * 100;
+    playerStore.setProgress(progress);
   };
 
   const handleTrackEnd = () => {
-    playerStore.setPlaying(false);
-    playerStore.setProgress(0);
+    if (playerStore.isRepeat) {
+      // повторяем текущий трек
+      playTrack(playerStore.currentTrack);
+    } else {
+      playerStore.playNext();
+      if (playerStore.currentTrack) {
+        playTrack(playerStore.currentTrack);
+      } else {
+        playerStore.setPlaying(false);
+      }
+    }
+  };
+
+  // Следующий трек
+  const playNext = () => {
     playerStore.playNext();
+    if (playerStore.currentTrack) {
+      playTrack(playerStore.currentTrack);
+    }
   };
 
-  const seekTo = (percentage) => {
-    if (!playerStore.audioRef || !playerStore.currentTrack) return;
-    const newTime = (percentage / 100) * playerStore.audioRef.duration;
-    playerStore.audioRef.currentTime = newTime;
-    playerStore.setProgress(percentage);
+  // Предыдущий трек
+  const playPrev = () => {
+    playerStore.playPrev();
+    if (playerStore.currentTrack) {
+      playTrack(playerStore.currentTrack);
+    }
   };
 
-  const updateVolume = (event) => {
-    if (!playerStore.audioRef) return;
-    const volumeValue = event.target.value;
-    playerStore.setVolume(volumeValue);
-    playerStore.audioRef.volume = volumeValue / 100;
+  // Переключение повторения
+  const toggleRepeat = () => {
+    playerStore.toggleRepeat();
+  };
+
+  // Переключение перемешивания
+  const toggleShuffle = () => {
+    playerStore.toggleShuffle();
   };
 
   return {
     initPlayer,
     playTrack,
-    handleTimeUpdate,
+    pause,
     seekTo,
     updateVolume,
+    handleTimeUpdate,
     handleTrackEnd,
+    playNext,
+    playPrev,
+    toggleRepeat,
+    toggleShuffle,
   };
 }
