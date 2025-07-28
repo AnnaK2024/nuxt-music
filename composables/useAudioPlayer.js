@@ -3,17 +3,26 @@ import { usePlayerStore } from "~/stores/player";
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
 
-  const initPlayer = (audioElement) => {
-    playerStore.setAudioRef(audioElement);
+  const initPlayer = (element) => {
+    playerStore.setAudioRef(element);
   };
 
   const playTrack = (track) => {
     if (!track) return;
+    console.log("Текущий трек:", track);
+    console.log("URL трека:", track.url);
     if (playerStore.audioRef) {
       playerStore.audioRef.src = track.url;
-      playerStore.audioRef.play();
-      playerStore.setPlaying(true);
-      playerStore.setCurrentTrack(track);
+      playerStore.audioRef
+        .play()
+        .then(() => {
+          playerStore.setPlaying(true);
+          playerStore.setCurrentTrack(track);
+        })
+        .catch((e) => {
+          console.error("Ошибка воспроизведения:", e);
+          playerStore.setPlaying(false);
+        });
     }
   };
 

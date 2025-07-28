@@ -94,6 +94,7 @@
     </div>
     <audio
       ref="audioRef"
+      :src="playerStore.currentTrack?.url"
       @timeupdate="handleTimeUpdate"
       @ended="handleTrackEnd"
     />
@@ -124,6 +125,10 @@ const {
 
 onMounted(() => {
   initPlayer(audioRef.value);
+  // Если трек не выбран, выбираем первый из плейлиста
+  if (!playerStore.currentTrack && playerStore.playlist.length > 0) {
+    playerStore.currentTrack = playerStore.playlist[0];
+  }
 });
 
 const handlePlay = () => {
@@ -249,6 +254,7 @@ const handleShuffleToggle = () => {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .player__btn-prev {
