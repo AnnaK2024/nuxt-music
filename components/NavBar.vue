@@ -1,32 +1,48 @@
 <template>
   <nav class="main__nav nav">
     <div class="nav__logo logo">
-      <img class="logo__image" src="/img/logo.png" />
+      <img class="logo__image" src="/img/logo.png" alt="Логотип" />
     </div>
-    <div class="nav__burger burger">
-      <span class="burger__line"></span>
-      <span class="burger__line"></span>
-      <span class="burger__line"></span>
+    <div
+      class="nav__burger burger"
+      aria-label="Toggle menu"
+      role="button"
+      tabindex="0"
+      @click="toggleMenu"
+      @keydown.enter.prevent="toggleMenu"
+      @keydown.space.prevent="toggleMenu"
+    >
+      <span class="burger__line" />
+      <span class="burger__line" />
+      <span class="burger__line" />
     </div>
-    <div class="nav__menu menu">
+    <div class="nav__menu menu" :class="{ 'menu--open': isMenuOpen }">
       <ul class="menu__list">
         <li class="menu__item">
-          <a href="#" class="menu__link">Главное</a>
+          <NuxtLink to="#" class="menu__link">Главное</NuxtLink>
         </li>
         <li class="menu__item">
-          <a href="#" class="menu__link">Мой плейлист</a>
+          <NuxtLink to="#" class="menu__link">Мой плейлист</NuxtLink>
         </li>
         <li class="menu__item">
-          <a href="../signin.html" class="menu__link">Войти</a>
+          <NuxtLink to="#" class="menu__link">Войти</NuxtLink>
         </li>
       </ul>
     </div>
   </nav>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from "vue";
 
-<style lang="scss" scoped>
+const isMenuOpen = ref(false);
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
+</script>
+
+<style scoped lang="scss">
 .main__nav {
   width: 244px;
   background-color: #181818;
@@ -43,27 +59,29 @@
   width: 20px;
   height: 36px;
   padding: 13px 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
   flex-direction: column;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
 }
 
 .nav__menu {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav__menu.menu--open {
   display: block;
   visibility: visible;
+  opacity: 1;
 }
 
 .logo__image {
   width: 113.33px;
   height: 17px;
-  color: #181818;
 }
 
 .burger__line {
@@ -87,5 +105,10 @@
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
+  text-decoration: none;
+}
+
+.menu__link:hover {
+  text-decoration: underline;
 }
 </style>

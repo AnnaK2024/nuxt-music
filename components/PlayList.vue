@@ -10,13 +10,33 @@
         </svg>
       </div>
     </div>
-    <div class="content__playlist playlist">
-      <TrackTrack />
+
+    <div v-if="loading" class="content__playlist playlist">
+      <div class="loading">
+        Загрузка треков
+        <span class="loading-dots">
+          <span>.</span><span>.</span><span>.</span><span>.</span><span>.</span>
+        </span>
+      </div>
+    </div>
+
+    <div v-else-if="error" class="content__playlist playlist">
+      <div class="error">Ошибка загрузки треков: {{ error }}</div>
+    </div>
+
+    <div v-else class="content__playlist playlist">
+      <TrackItem v-for="track in tracks" :key="track.id" :track="track" />
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+const { fetchTracks, tracks, loading, error } = useTracks();
+
+onMounted(() => {
+  fetchTracks();
+});
+</script>
 
 <style lang="scss" scoped>
 .centerblock__content {
@@ -90,4 +110,57 @@
   width: 60px;
   text-align: end;
 }
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  height: 100px;
+  color: #555;
+  gap: 8px;
+  user-select: none;
+}
+
+.loading-dots span {
+  opacity: 0;
+  animation-name: blink;
+  animation-duration: 1.25s;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+  font-weight: 700;
+  font-size: 28px;
+  color: #888;
+  line-height: 1;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.5s;
+}
+.loading-dots span:nth-child(4) {
+  animation-delay: 0.75s;
+}
+.loading-dots span:nth-child(5) {
+  animation-delay: 1s;
+}
+
+@keyframes blink {
+  0%, 20% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 </style>

@@ -1,39 +1,49 @@
 <template>
-  <div>
-    <div v-for="(track, index) in tracks" :key="index" class="playlist__item">
-      <div class="playlist__track track">
-        <div class="track__title">
-          <div class="track__title-image">
-            <svg class="track__title-svg">
-              <use xlink:href="/icons/sprite.svg#icon-note"></use>
-            </svg>
-          </div>
-          <div class="track__title-text">
-            <a class="track__title-link" href="http://">
-              {{ track.title }}
-              <span class="track__title-span">{{ track.titleSpan }}</span>
-            </a>
-          </div>
-        </div>
-        <div class="track__author">
-          <a class="track__author-link" href="http://">{{ track.author }}</a>
-        </div>
-        <div class="track__album">
-          <a class="track__album-link" href="http://">{{ track.album }}</a>
-        </div>
-        <div class="track__time">
-          <svg class="track__time-svg">
-            <use xlink:href="/icons/sprite.svg#icon-like"></use>
+  <div class="playlist__item">
+    <div class="playlist__track track">
+      <div class="track__title">
+        <div class="track__title-image">
+          <svg class="track__title-svg">
+            <use xlink:href="/icons/sprite.svg#icon-note" />
           </svg>
-          <span class="track__time-text">{{ track.time }}</span>
         </div>
+        <div class="track__title-text">
+          <a class="track__title-link" href="http://">
+            {{ track.name }}
+            <span class="track__title-span">{{ track.titleSpan }}</span>
+          </a>
+        </div>
+      </div>
+      <div class="track__author">
+        <a class="track__author-link" href="http://">{{ track.author }}</a>
+      </div>
+      <div class="track__album">
+        <a class="track__album-link" href="http://">{{ track.album }}</a>
+      </div>
+      <div class="track__time">
+        <svg
+          class="track__time-svg"
+        >
+          <use xlink:href="/icons/sprite.svg#icon-like" />
+        </svg>
+        <span class="track__time-text">{{
+          formatDuration(track.duration_in_seconds)
+        }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { tracks } from '~/public/tracks';
+defineProps({
+  track: {
+    type: Object,
+    required: true,
+  },
+});
+
+const { formatDuration } = useTracks();
+
 </script>
 
 <style lang="scss" scoped>
