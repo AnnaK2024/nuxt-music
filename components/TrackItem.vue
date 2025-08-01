@@ -1,6 +1,6 @@
 <template>
   <div class="playlist__item">
-    <div class="playlist__track track">
+    <div class="playlist__track track" @click="handleClick">
       <div class="track__title">
         <div class="track__title-image">
           <svg class="track__title-svg">
@@ -43,6 +43,12 @@ defineProps({
 });
 
 const { formatDuration} = useTracks();
+
+const { playTrack } = useAudioPlayer();
+
+const handleClick = () => {
+  playTrack(track);
+};
 
 </script>
 
