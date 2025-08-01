@@ -12,12 +12,15 @@ export const useTracks = () => {
     error.value = null;
     try {
       const response = await fetch(`${API_URL}/catalog/track/all/`);
+      console.log("Ответ API:", response);
       if (!response.ok) {
         throw new Error("Не удалось получить треки");
       }
       const data = await response.json();
+      console.log("Данные API:", data);
       tracks.value = data.data;
     } catch (e) {
+      console.error("Ошибка при загрузке треков:", e);
       error.value =
         e instanceof Error ? e.message : "Ошибка при загрузке треков :(";
     } finally {
@@ -25,17 +28,10 @@ export const useTracks = () => {
     }
   };
 
-  const formatDuration = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
   return {
     tracks,
     loading,
     error,
     fetchTracks,
-    formatDuration,
   };
 };

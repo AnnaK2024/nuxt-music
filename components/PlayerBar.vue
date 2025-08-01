@@ -5,7 +5,7 @@
         <div
           class="bar__player-progress-line"
           :style="{ width: playerStore.progress + '%' }"
-        />
+        ></div>
       </div>
       <div class="bar__player-block">
         <div class="bar__player player">
@@ -94,7 +94,7 @@
     </div>
     <audio
       ref="audioRef"
-      :src="playerStore.currentTrack?.url"
+      :src="playerStore.currentTrack?.track_file"
       @timeupdate="handleTimeUpdate"
       @ended="handleTrackEnd"
     />
@@ -188,6 +188,16 @@ const handleShuffleToggle = () => {
   width: 100%;
   height: 5px;
   background: #2e2e2e;
+  position: relative;
+}
+.bar__player-progress-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #ad61ff;
+  width: 0;
+  transition: width 0.3s ease;
 }
 
 .bar__player-block {

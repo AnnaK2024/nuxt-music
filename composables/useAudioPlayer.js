@@ -7,25 +7,25 @@ export function useAudioPlayer() {
     playerStore.setAudioRef(element);
   };
 
-  const playTrack = (track) => {
-    if (!track) return;
-    console.log("Текущий трек:", track);
-    console.log("URL трека:", track.url);
-    if (playerStore.audioRef) {
-      playerStore.audioRef.src = track.url;
-      playerStore.audioRef
-        .play()
-        .then(() => {
-          playerStore.setPlaying(true);
-          playerStore.setCurrentTrack(track);
-        })
-        .catch((e) => {
-          console.error("Ошибка воспроизведения:", e);
-          playerStore.setPlaying(false);
-        });
-    }
-  };
+ const playTrack = (track) => {
+  if (!track.track_file) return; // Проверка наличия URL
+  console.log("Текущий трек:", track);
+  console.log("URL трека:", track.track_file); // Используем правильное свойство
 
+  if (playerStore.audioRef) {
+    playerStore.audioRef.src = track.track_file; // Обновляем источник
+    playerStore.audioRef
+      .play()
+      .then(() => {
+        playerStore.setPlaying(true);
+        playerStore.setCurrentTrack(track);
+      })
+      .catch((e) => {
+        console.error("Ошибка воспроизведения:", e);
+        playerStore.setPlaying(false);
+      });
+  }
+};
   const pause = () => {
     if (playerStore.audioRef) {
       playerStore.audioRef.pause();
@@ -47,6 +47,7 @@ export function useAudioPlayer() {
   };
 
   const handleTimeUpdate = () => {
+    console.log('timeupdate', event.target.currentTime);
     if (!playerStore.audioRef) return;
     const currentTime = playerStore.audioRef.currentTime;
     const duration = playerStore.audioRef.duration;
@@ -54,6 +55,7 @@ export function useAudioPlayer() {
     const progress = (currentTime / duration) * 100;
     playerStore.setProgress(progress);
   };
+
 
   const handleTrackEnd = () => {
     if (playerStore.isRepeat) {

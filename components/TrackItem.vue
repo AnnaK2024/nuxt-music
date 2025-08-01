@@ -8,48 +8,41 @@
           </svg>
         </div>
         <div class="track__title-text">
-          <a class="track__title-link" href="http://">
+          <a class="track__title-link" href="http:#">
             {{ track.name }}
             <span class="track__title-span">{{ track.titleSpan }}</span>
           </a>
         </div>
       </div>
       <div class="track__author">
-        <a class="track__author-link" href="http://">{{ track.author }}</a>
+        <a class="track__author-link" href="http:#">{{ track.author }}</a>
       </div>
       <div class="track__album">
-        <a class="track__album-link" href="http://">{{ track.album }}</a>
+        <a class="track__album-link" href="http:#">{{ track.album }}</a>
       </div>
       <div class="track__time">
-        <svg
-          class="track__time-svg"
-        >
+        <svg class="track__time-svg">
           <use xlink:href="/icons/sprite.svg#icon-like" />
         </svg>
-        <span class="track__time-text">{{
-          formatDuration(track.duration_in_seconds)
-        }}</span>
+        <span class="track__time-text" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   track: {
     type: Object,
     required: true,
   },
 });
 
-const { formatDuration} = useTracks();
-
 const { playTrack } = useAudioPlayer();
 
 const handleClick = () => {
-  playTrack(track);
+  playTrack(props.track);
 };
-
 </script>
 
 <style lang="scss" scoped>
