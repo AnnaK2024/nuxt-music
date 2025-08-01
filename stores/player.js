@@ -53,8 +53,8 @@ export const usePlayerStore = defineStore("player", {
     },
 
     // Установить ссылку на аудиоэлемент
-    setAudioRef(element) {
-      this.audioRef = element;
+    setAudioRef(audioElement) {
+      this.audioRef = audioElement;
       if (this.audioRef) {
         this.audioRef.volume = this.volume / 100;
       }

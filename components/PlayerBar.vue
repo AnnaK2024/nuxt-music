@@ -5,7 +5,7 @@
         <div
           class="bar__player-progress-line"
           :style="{ width: playerStore.progress + '%' }"
-        ></div>
+        />
       </div>
       <div class="bar__player-block">
         <div class="bar__player player">
@@ -94,7 +94,6 @@
     </div>
     <audio
       ref="audioRef"
-      :src="playerStore.currentTrack?.track_file"
       @timeupdate="handleTimeUpdate"
       @ended="handleTrackEnd"
     />
@@ -125,15 +124,17 @@ const {
 
 onMounted(() => {
   initPlayer(audioRef.value);
-  // Если трек не выбран, выбираем первый из плейлиста
-  if (!playerStore.currentTrack && playerStore.playlist.length > 0) {
-    playerStore.currentTrack = playerStore.playlist[0];
-  }
 });
 
 const handlePlay = () => {
-  if (!playerStore.currentTrack) return;
-  if (playerStore.isPlaying) {
+  if (!playerStore.currentTrack) {
+    if (playerStore.playlist.length > 0) {
+      console.log("Запуск первого трека:", playerStore.playlist[0]);
+      playTrack(playerStore.playlist[0]);
+    } else {
+      console.log("Плейлист пуст");
+    }
+  } else if (playerStore.isPlaying) {
     pause();
   } else {
     playTrack(playerStore.currentTrack);
