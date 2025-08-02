@@ -59,12 +59,15 @@ export const usePlayerStore = defineStore("player", {
         this.audioRef.volume = this.volume / 100;
       }
     },
+
     toggleRepeat() {
       this.isRepeat = !this.isRepeat;
     },
+
     toggleShuffle() {
       this.isShuffle = !this.isShuffle;
     },
+
     playNext() {
       if (!this.playlist.length) return;
       if (this.isShuffle) {
@@ -80,6 +83,7 @@ export const usePlayerStore = defineStore("player", {
         this.currentTrack = this.playlist[nextIndex];
       }
     },
+    
     playPrev() {
       if (!this.playlist.length) return;
       const currentIndex = this.playlist.findIndex(

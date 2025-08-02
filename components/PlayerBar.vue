@@ -127,6 +127,8 @@ onMounted(() => {
 });
 
 const handlePlay = () => {
+  console.log("Текущий трек:", playerStore.currentTrack);
+  console.log("Плейлист:", playerStore.playlist);
   if (!playerStore.currentTrack) {
     if (playerStore.playlist.length > 0) {
       console.log("Запуск первого трека:", playerStore.playlist[0]);

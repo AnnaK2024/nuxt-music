@@ -7,24 +7,42 @@ export function useAudioPlayer() {
   // Инициализация аудио-плеера
   const initPlayer = (audioElement) => {
     playerStore.setAudioRef(audioElement);
+
+     // Добавляем обработчики событий к аудиоэлементу
+    audioElement.addEventListener("timeupdate", handleTimeUpdate);
+    audioElement.addEventListener("ended", handleTrackEnd);
   };
+  
 
   // Воспроизведение трека
   const playTrack = (track) => {
     if (!track.track_file) return;
 
     if (playerStore.audioRef) {
+      // Очищаем src, чтобы сбросить текущее состояние (не обязательно)
+      // playerStore.audioRef.src = '';
+
       playerStore.audioRef.src = track.track_file;
-      playerStore.audioRef
-        .play()
-        .then(() => {
-          playerStore.setPlaying(true);
-          playerStore.setCurrentTrack(track);
-        })
-        .catch((e) => {
-          console.error("Ошибка воспроизведения:", e);
-          playerStore.setPlaying(false);
-        });
+
+      // Ждем, когда аудио будет готово к воспроизведению
+      const onCanPlay = () => {
+        playerStore.audioRef
+          .play()
+          .then(() => {
+            playerStore.setPlaying(true);
+            playerStore.setCurrentTrack(track);
+          })
+          .catch((e) => {
+            console.error("Ошибка воспроизведения:", e);
+            playerStore.setPlaying(false);
+          });
+        // Удаляем слушатель, чтобы не вызывать повторно
+        playerStore.audioRef.removeEventListener("canplay", onCanPlay);
+      };
+
+      playerStore.audioRef.addEventListener("canplay", onCanPlay);
+      // Можно вызвать load(), чтобы гарантировать загрузку
+      playerStore.audioRef.load();
     }
   };
 
@@ -56,7 +74,6 @@ export function useAudioPlayer() {
 
   // Обработка обновления времени воспроизведения
   const handleTimeUpdate = () => {
-    console.log("timeupdate", event.target.currentTime);
     if (!playerStore.audioRef) return;
     const currentTime = playerStore.audioRef.currentTime;
     const duration = playerStore.audioRef.duration;
@@ -66,25 +83,22 @@ export function useAudioPlayer() {
   };
 
   // Обработка окончания трека
-  const handleTrackEnd = () => {
+ const handleTrackEnd = () => {
+  console.log("Трек закончился");
     if (playerStore.isRepeat) {
-      // повторяем текущий трек
       playTrack(playerStore.currentTrack);
     } else {
       playerStore.playNext();
-      if (playerStore.currentTrack) {
-        playTrack(playerStore.currentTrack);
-      } else {
-        playerStore.setPlaying(false);
-      }
+      // playTrack вызовется автоматически через watch
     }
   };
 
-   // Автоматически запускаем воспроизведение при смене currentTrack
+  // Автоматически запускаем воспроизведение при смене currentTrack
   watch(
     () => playerStore.currentTrack,
     (newTrack) => {
       if (newTrack) {
+        console.log("currentTrack изменился, запускаем playTrack", newTrack);
         playTrack(newTrack);
       }
     }
@@ -93,6 +107,7 @@ export function useAudioPlayer() {
   // Переход к следующему треку
   const playNext = () => {
     playerStore.playNext();
+    console.log("playNext вызван, currentTrack:", playerStore.currentTrack);
     // playTrack вызовется автоматически через watch
   };
 
