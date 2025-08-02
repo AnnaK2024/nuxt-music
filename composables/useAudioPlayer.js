@@ -4,6 +4,10 @@ import { watch } from "vue";
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
 
+  // Добавляем реактивные переменные для времени
+  const currentTime = ref(0);
+  const duration = ref(0);
+
   // Инициализация аудио-плеера
   const initPlayer = (audioElement) => {
     playerStore.setAudioRef(audioElement);
@@ -11,6 +15,11 @@ export function useAudioPlayer() {
      // Добавляем обработчики событий к аудиоэлементу
     audioElement.addEventListener("timeupdate", handleTimeUpdate);
     audioElement.addEventListener("ended", handleTrackEnd);
+    
+      // При загрузке трека обновим длительность
+    audioElement.addEventListener("loadedmetadata", () => {
+      duration.value = audioElement.duration || 0;
+    });
   };
   
 
@@ -31,6 +40,8 @@ export function useAudioPlayer() {
           .then(() => {
             playerStore.setPlaying(true);
             playerStore.setCurrentTrack(track);
+            // Обновим длительность при старте
+            duration.value = playerStore.audioRef.duration || 0;
           })
           .catch((e) => {
             console.error("Ошибка воспроизведения:", e);
@@ -72,13 +83,15 @@ export function useAudioPlayer() {
     }
   };
 
-  // Обработка обновления времени воспроизведения
+ // Обновляем currentTime, duration и прогресс
   const handleTimeUpdate = () => {
     if (!playerStore.audioRef) return;
-    const currentTime = playerStore.audioRef.currentTime;
-    const duration = playerStore.audioRef.duration;
-    if (isNaN(duration) || duration === 0) return;
-    const progress = (currentTime / duration) * 100;
+    currentTime.value = playerStore.audioRef.currentTime;
+    duration.value = playerStore.audioRef.duration || 0;
+
+    if (isNaN(duration.value) || duration.value === 0) return;
+
+    const progress = (currentTime.value / duration.value) * 100;
     playerStore.setProgress(progress);
   };
 
@@ -139,5 +152,7 @@ export function useAudioPlayer() {
     playPrev,
     toggleRepeat,
     toggleShuffle,
+    currentTime,
+    duration,
   };
 }

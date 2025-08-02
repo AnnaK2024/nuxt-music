@@ -6,6 +6,8 @@
           class="bar__player-progress-line"
           :style="{ width: playerStore.progress + '%' }"
         />
+        <div class="bar__time current-time">{{ formattedCurrentTime }}</div>
+        <div class="bar__time total-time">{{ formattedDuration }}</div>
       </div>
       <div class="bar__player-block">
         <div class="bar__player player">
@@ -120,6 +122,8 @@ const {
   playPrev,
   toggleRepeat,
   toggleShuffle,
+  currentTime,
+  duration,
 } = useAudioPlayer();
 
 onMounted(() => {
@@ -150,6 +154,9 @@ const handleProgressClick = (event) => {
   const percentage = (clickPosition / progressBarWidth) * 100;
   seekTo(percentage);
 };
+
+const formattedCurrentTime = computed(() => formatTime(currentTime.value));
+const formattedDuration = computed(() => formatTime(duration.value));
 
 const handleNext = () => {
   playNext();
@@ -188,11 +195,32 @@ const handleShuffleToggle = () => {
 }
 
 .bar__player-progress {
+  position: relative;
   width: 100%;
   height: 5px;
   background: #2e2e2e;
-  position: relative;
+  cursor: pointer;
+  padding: 0 40px;
+  box-sizing: border-box;
 }
+.bar__time {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #d9d9d9;
+  user-select: none;
+  font-family: monospace;
+}
+
+.current-time {
+  left: 10px;
+}
+
+.total-time {
+  right: 10px;
+}
+
 .bar__player-progress-line {
   position: absolute;
   top: 0;
@@ -200,6 +228,7 @@ const handleShuffleToggle = () => {
   height: 100%;
   background-color: #ad61ff;
   width: 0;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 

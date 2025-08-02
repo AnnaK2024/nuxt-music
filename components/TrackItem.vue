@@ -24,7 +24,7 @@
         <svg class="track__time-svg">
           <use xlink:href="/icons/sprite.svg#icon-like" />
         </svg>
-        <span class="track__time-text" />
+        <span class="track__time-text" />{{ formatTime(track.duration_in_seconds) }}
       </div>
     </div>
   </div>
