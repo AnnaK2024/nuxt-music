@@ -1,5 +1,5 @@
 import { usePlayerStore } from "~/stores/player";
-import { watch } from "vue";
+import { ref, watchEffect} from "vue";
 
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
@@ -106,16 +106,21 @@ export function useAudioPlayer() {
     }
   };
 
-  // Автоматически запускаем воспроизведение при смене currentTrack
-  watch(
-    () => playerStore.currentTrack,
-    (newTrack) => {
-      if (newTrack) {
-        console.log("currentTrack изменился, запускаем playTrack", newTrack);
-        playTrack(newTrack);
-      }
+   // Используем watchEffect для автоматического запуска playTrack при смене currentTrack
+  watchEffect(() => {
+    const track = playerStore.currentTrack;
+    if (track) {
+      console.log("currentTrack изменился, запускаем playTrack", track);
+      playTrack(track);
     }
-  );
+  });
+
+   // Автоматическая остановка воспроизведения при достижении 100% прогресса
+  watchEffect(() => {
+    if (playerStore.progress >= 100 && playerStore.isPlaying) {
+      playerStore.setPlaying(false);
+    }
+  });
 
   // Переход к следующему треку
   const playNext = () => {
