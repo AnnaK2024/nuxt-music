@@ -34,7 +34,7 @@ useHead({
   width: 100%;
   min-height: 100%;
   overflow: hidden;
-  background-color: #383838;
+  background-color: #181818;
 }
 
 .container {

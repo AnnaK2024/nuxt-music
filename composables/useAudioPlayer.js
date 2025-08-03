@@ -1,80 +1,99 @@
 import { usePlayerStore } from "~/stores/player";
-import { ref, watchEffect} from "vue";
+import { watch, ref } from "vue";
 
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
 
-  // Добавляем реактивные переменные для времени
   const currentTime = ref(0);
   const duration = ref(0);
 
-  // Инициализация аудио-плеера
   const initPlayer = (audioElement) => {
     playerStore.setAudioRef(audioElement);
 
-     // Добавляем обработчики событий к аудиоэлементу
     audioElement.addEventListener("timeupdate", handleTimeUpdate);
     audioElement.addEventListener("ended", handleTrackEnd);
-    
-      // При загрузке трека обновим длительность
     audioElement.addEventListener("loadedmetadata", () => {
       duration.value = audioElement.duration || 0;
     });
   };
-  
 
-  // Воспроизведение трека
   const playTrack = (track) => {
-    if (!track.track_file) return;
-
-    if (playerStore.audioRef) {
-      // Очищаем src, чтобы сбросить текущее состояние (не обязательно)
-      // playerStore.audioRef.src = '';
-
-      playerStore.audioRef.src = track.track_file;
-
-      // Ждем, когда аудио будет готово к воспроизведению
-      const onCanPlay = () => {
-        playerStore.audioRef
-          .play()
-          .then(() => {
-            playerStore.setPlaying(true);
-            playerStore.setCurrentTrack(track);
-            // Обновим длительность при старте
-            duration.value = playerStore.audioRef.duration || 0;
-          })
-          .catch((e) => {
-            console.error("Ошибка воспроизведения:", e);
-            playerStore.setPlaying(false);
-          });
-        // Удаляем слушатель, чтобы не вызывать повторно
-        playerStore.audioRef.removeEventListener("canplay", onCanPlay);
-      };
-
-      playerStore.audioRef.addEventListener("canplay", onCanPlay);
-      // Можно вызвать load(), чтобы гарантировать загрузку
-      playerStore.audioRef.load();
+    if (!track.track_file) {
+      console.warn("Трек не содержит файл для воспроизведения");
+      playerStore.setPlaying(false);
+      return;
     }
+
+    if (!playerStore.audioRef) {
+      console.error("Аудиоэлемент не инициализирован");
+      playerStore.setPlaying(false);
+      return;
+    }
+
+    playerStore.audioRef.removeEventListener("canplay", playerStore._onCanPlay);
+
+    playerStore.audioRef.src = track.track_file;
+
+    const onCanPlay = () => {
+      playerStore.audioRef.play()
+        .then(() => {
+          playerStore.setPlaying(true);
+          playerStore.setCurrentTrack(track);
+          duration.value = playerStore.audioRef.duration || 0;
+        })
+        .catch((e) => {
+          console.error("Ошибка воспроизведения:", e);
+          playerStore.setPlaying(false);
+        });
+
+      playerStore.audioRef.removeEventListener("canplay", onCanPlay);
+      delete playerStore._onCanPlay;
+    };
+
+    playerStore._onCanPlay = onCanPlay;
+    playerStore.audioRef.addEventListener("canplay", onCanPlay);
+
+    playerStore.audioRef.load();
   };
 
-  // Пауза
+  const play = () => {
+    if (!playerStore.audioRef) {
+      console.error("Аудиоэлемент не инициализирован");
+      return;
+    }
+
+    playerStore.audioRef.play()
+      .then(() => {
+        playerStore.setPlaying(true);
+      })
+      .catch((e) => {
+        console.error("Ошибка при попытке воспроизведения:", e);
+        playerStore.setPlaying(false);
+      });
+  };
+
   const pause = () => {
-    if (playerStore.audioRef) {
+    if (!playerStore.audioRef) {
+      console.error("Аудиоэлемент не инициализирован");
+      return;
+    }
+
+    try {
       playerStore.audioRef.pause();
       playerStore.setPlaying(false);
+    } catch (e) {
+      console.error("Ошибка при попытке поставить на паузу:", e);
     }
   };
 
-  // Перемотка
   const seekTo = (percentage) => {
     if (!playerStore.audioRef) return;
-    const duration = playerStore.audioRef.duration;
-    if (isNaN(duration)) return;
-    playerStore.audioRef.currentTime = (percentage / 100) * duration;
+    const dur = playerStore.audioRef.duration;
+    if (isNaN(dur)) return;
+    playerStore.audioRef.currentTime = (percentage / 100) * dur;
     playerStore.setProgress(percentage);
   };
 
-  // Обновление громкости
   const updateVolume = (event) => {
     const volume = event.target.value;
     playerStore.setVolume(volume);
@@ -83,7 +102,6 @@ export function useAudioPlayer() {
     }
   };
 
- // Обновляем currentTime, duration и прогресс
   const handleTimeUpdate = () => {
     if (!playerStore.audioRef) return;
     currentTime.value = playerStore.audioRef.currentTime;
@@ -95,52 +113,62 @@ export function useAudioPlayer() {
     playerStore.setProgress(progress);
   };
 
-  // Обработка окончания трека
- const handleTrackEnd = () => {
-  console.log("Трек закончился");
+  const handleTrackEnd = () => {
+    console.log("Трек закончился");
+
     if (playerStore.isRepeat) {
       playTrack(playerStore.currentTrack);
-    } else {
+    } else if (playerStore.hasNext) {
       playerStore.playNext();
-      // playTrack вызовется автоматически через watch
-    }
-  };
-
-   // Используем watchEffect для автоматического запуска playTrack при смене currentTrack
-  watchEffect(() => {
-    const track = playerStore.currentTrack;
-    if (track) {
-      console.log("currentTrack изменился, запускаем playTrack", track);
-      playTrack(track);
-    }
-  });
-
-   // Автоматическая остановка воспроизведения при достижении 100% прогресса
-  watchEffect(() => {
-    if (playerStore.progress >= 100 && playerStore.isPlaying) {
+    } else {
       playerStore.setPlaying(false);
     }
-  });
+  };
 
-  // Переход к следующему треку
+  watch(
+    () => playerStore.currentTrack,
+    (newTrack) => {
+      if (newTrack) {
+        console.log("currentTrack изменился, запускаем playTrack", newTrack);
+        playTrack(newTrack);
+      }
+    }
+  );
+
+  watch(
+  () => playerStore.currentTrack,
+  (newTrack) => {
+    if (newTrack) {
+      console.log("currentTrack изменился, запускаем playTrack", newTrack);
+      playTrack(newTrack);
+    }
+  }
+);
+
+watch(
+  () => playerStore.isPlaying,
+  (isPlaying) => {
+    if (!playerStore.audioRef) return;
+
+    if (!isPlaying) {
+      playerStore.audioRef.pause();
+    }
+  }
+);
+
+
   const playNext = () => {
     playerStore.playNext();
-    console.log("playNext вызван, currentTrack:", playerStore.currentTrack);
-    // playTrack вызовется автоматически через watch
   };
 
-  // Переход к предыдущему треку
   const playPrev = () => {
     playerStore.playPrev();
-    // playTrack вызовется автоматически через watch
   };
 
-  // Переключение повторения
   const toggleRepeat = () => {
     playerStore.toggleRepeat();
   };
 
-  // Переключение перемешивания
   const toggleShuffle = () => {
     playerStore.toggleShuffle();
   };
@@ -148,6 +176,7 @@ export function useAudioPlayer() {
   return {
     initPlayer,
     playTrack,
+    play,
     pause,
     seekTo,
     updateVolume,
