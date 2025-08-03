@@ -1,7 +1,7 @@
 <template>
   <div class="main__sidebar sidebar">
     <div class="sidebar__personal">
-      <p class="sidebar__personal-name">Sergey.Ivanov</p>
+      <p class="sidebar__personal-name">{{ userStore.username || "Гость" }}</p>
       <div class="sidebar__icon">
         <svg>
           <use xlink:href="/icons/sprite.svg#logout" />
@@ -42,7 +42,11 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { useUserStore } from "@/stores/user";
+
+const userStore = useUserStore();
+</script>
 
 <style lang="scss" scoped>
 .main__sidebar {
