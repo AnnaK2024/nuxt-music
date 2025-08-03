@@ -114,6 +114,7 @@ const {
   initPlayer,
   playTrack,
   pause,
+  play,
   seekTo,
   updateVolume,
   handleTimeUpdate,
@@ -133,6 +134,7 @@ onMounted(() => {
 const handlePlay = () => {
   console.log("Текущий трек:", playerStore.currentTrack);
   console.log("Плейлист:", playerStore.playlist);
+
   if (!playerStore.currentTrack) {
     if (playerStore.playlist.length > 0) {
       console.log("Запуск первого трека:", playerStore.playlist[0]);
@@ -140,12 +142,16 @@ const handlePlay = () => {
     } else {
       console.log("Плейлист пуст");
     }
-  } else if (playerStore.isPlaying) {
-    pause();
   } else {
-    playTrack(playerStore.currentTrack);
+    if (playerStore.isPlaying) {
+      pause(); // ставим на паузу
+    } else {
+      // просто возобновляем воспроизведение без перезапуска трека
+      play();
+    }
   }
 };
+
 
 const handleProgressClick = (event) => {
   const progressBar = event.currentTarget;
