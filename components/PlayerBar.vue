@@ -1,84 +1,185 @@
 <template>
   <div class="bar">
     <div class="bar__content">
-      <div class="bar__player-progress"></div>
+      <div class="bar__player-progress" @click="handleProgressClick">
+        <div
+          class="bar__player-progress-line"
+          :style="{ width: playerStore.progress + '%' }"
+        />
+        <div class="bar__time current-time">{{ formattedCurrentTime }}</div>
+        <div class="bar__time total-time">{{ formattedDuration }}</div>
+      </div>
       <div class="bar__player-block">
         <div class="bar__player player">
           <div class="player__controls">
-            <div class="player__btn-prev">
+            <div class="player__btn-prev" @click="handlePrev">
               <svg class="player__btn-prev-svg">
-                <use xlink:href="/icons/sprite.svg#icon-prev"></use>
+                <use xlink:href="/icons/sprite.svg#icon-prev" />
               </svg>
             </div>
-            <div class="player__btn-play _btn">
+            <div class="player__btn-play _btn" @click="handlePlay">
               <svg class="player__btn-play-svg">
-                <use xlink:href="/icons/sprite.svg#icon-play"></use>
+                <use
+                  :xlink:href="
+                    playerStore.isPlaying
+                      ? '/icons/sprite.svg#icon-pause'
+                      : '/icons/sprite.svg#icon-play'
+                  "
+                />
               </svg>
             </div>
-            <div class="player__btn-next">
+            <div class="player__btn-next" @click="handleNext">
               <svg class="player__btn-next-svg">
-                <use xlink:href="/icons/sprite.svg#icon-next"></use>
+                <use xlink:href="/icons/sprite.svg#icon-next" />
               </svg>
             </div>
-            <div class="player__btn-repeat _btn-icon">
+            <div
+              class="player__btn-repeat _btn-icon"
+              :class="{ active: playerStore.isRepeat }"
+              @click="handleRepeatToggle"
+            >
               <svg class="player__btn-repeat-svg">
-                <use xlink:href="/icons/sprite.svg#icon-repeat"></use>
+                <use xlink:href="/icons/sprite.svg#icon-repeat" />
               </svg>
             </div>
-            <div class="player__btn-shuffle _btn-icon">
+            <div
+              class="player__btn-shuffle _btn-icon"
+              :class="{ active: playerStore.isShuffle }"
+              @click="handleShuffleToggle"
+            >
               <svg class="player__btn-shuffle-svg">
-                <use xlink:href="/icons/sprite.svg#icon-shuffle"></use>
+                <use xlink:href="/icons/sprite.svg#icon-shuffle" />
               </svg>
             </div>
           </div>
-
           <div class="player__track-play track-play">
             <div class="track-play__contain">
               <div class="track-play__image">
                 <svg class="track-play__svg">
-                  <use xlink:href="/icons/sprite.svg#icon-note"></use>
+                  <use xlink:href="/icons/sprite.svg#icon-note" />
                 </svg>
               </div>
               <div class="track-play__author">
-                <a class="track-play__author-link" href="http://">Ты та...</a>
+                <a class="track-play__author-link" href="#">{{
+                  playerStore.currentTrack?.author || "Выберите трек"
+                }}</a>
               </div>
               <div class="track-play__album">
-                <a class="track-play__album-link" href="http://">Баста</a>
-              </div>
-            </div>
-
-            <div class="track-play__like-dis">
-              <div class="track-play__like _btn-icon">
-                <svg class="track-play__like-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-like"></use>
-                </svg>
-              </div>
-              <div class="track-play__dislike _btn-icon">
-                <svg class="track-play__dislike-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-dislike"></use>
-                </svg>
+                <a class="track-play__album-link" href="#">{{
+                  playerStore.currentTrack?.album || ""
+                }}</a>
               </div>
             </div>
           </div>
         </div>
-        <div class="bar__volume-block volume">
+        <div class="bar__volume-block">
           <div class="volume__content">
             <div class="volume__image">
               <svg class="volume__svg">
-                <use xlink:href="/icons/sprite.svg#icon-volume"></use>
+                <use xlink:href="/icons/sprite.svg#icon-volume" />
               </svg>
             </div>
             <div class="volume__progress _btn">
-              <input class="volume__progress-line _btn" type="range" name="range" />
+              <input
+                v-model="playerStore.volume"
+                class="volume__progress-line _btn"
+                type="range"
+                name="range"
+                min="0"
+                max="100"
+                @input="updateVolume"
+              />
             </div>
           </div>
         </div>
       </div>
     </div>
+    <audio
+      ref="audioRef"
+      @timeupdate="handleTimeUpdate"
+      @ended="handleTrackEnd"
+    />
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from "vue";
+import { usePlayerStore } from "~/stores/player";
+import { useAudioPlayer } from "~/composables/useAudioPlayer";
+
+const playerStore = usePlayerStore();
+const audioRef = ref(null);
+
+const {
+  initPlayer,
+  playTrack,
+  pause,
+  play,
+  seekTo,
+  updateVolume,
+  handleTimeUpdate,
+  handleTrackEnd,
+  playNext,
+  playPrev,
+  toggleRepeat,
+  toggleShuffle,
+  currentTime,
+  duration,
+} = useAudioPlayer();
+
+onMounted(() => {
+  initPlayer(audioRef.value);
+});
+
+const handlePlay = () => {
+  console.log("Текущий трек:", playerStore.currentTrack);
+  console.log("Плейлист:", playerStore.playlist);
+
+  if (!playerStore.currentTrack) {
+    if (playerStore.playlist.length > 0) {
+      console.log("Запуск первого трека:", playerStore.playlist[0]);
+      playTrack(playerStore.playlist[0]);
+    } else {
+      console.log("Плейлист пуст");
+    }
+  } else {
+    if (playerStore.isPlaying) {
+      pause(); // ставим на паузу
+    } else {
+      // просто возобновляем воспроизведение без перезапуска трека
+      play();
+    }
+  }
+};
+
+
+const handleProgressClick = (event) => {
+  const progressBar = event.currentTarget;
+  const clickPosition = event.offsetX;
+  const progressBarWidth = progressBar.offsetWidth;
+  const percentage = (clickPosition / progressBarWidth) * 100;
+  seekTo(percentage);
+};
+
+const formattedCurrentTime = computed(() => formatTime(currentTime.value));
+const formattedDuration = computed(() => formatTime(duration.value));
+
+const handleNext = () => {
+  playNext();
+};
+
+const handlePrev = () => {
+  playPrev();
+};
+
+const handleRepeatToggle = () => {
+  toggleRepeat();
+};
+
+const handleShuffleToggle = () => {
+  toggleShuffle();
+};
+</script>
 
 <style lang="scss" scoped>
 .bar {
@@ -100,9 +201,41 @@
 }
 
 .bar__player-progress {
+  position: relative;
   width: 100%;
   height: 5px;
   background: #2e2e2e;
+  cursor: pointer;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+.bar__time {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #d9d9d9;
+  user-select: none;
+  font-family: monospace;
+}
+
+.current-time {
+  left: 10px;
+}
+
+.total-time {
+  right: 10px;
+}
+
+.bar__player-progress-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #ad61ff;
+  width: 0;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 .bar__player-block {
@@ -169,6 +302,7 @@
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .player__btn-prev {
