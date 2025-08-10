@@ -1,28 +1,184 @@
 <template>
-  <NuxtLayout name="default">
-    <div class="centerblock__search search">
-      <svg class="search__svg">
-        <use xlink:href="/icons/sprite.svg#icon-search" />
-      </svg>
-      <input
-        class="search__text"
-        type="search"
-        placeholder="Поиск"
-        name="search"
-      />
+  <div class="wrapper">
+    <div class="container">
+      <main class="main">
+        <nav class="main__nav nav">
+          <div class="nav__logo logo">
+            <img class="logo__image" src="/img/logo.png" />
+          </div>
+          <div class="nav__burger burger">
+            <span class="burger__line" />
+            <span class="burger__line" />
+            <span class="burger__line" />
+          </div>
+          <div class="nav__menu menu">
+            <ul class="menu__list">
+              <li class="menu__item">
+                <a href="#" class="menu__link">Главное</a>
+              </li>
+              <li class="menu__item">
+                <a href="#" class="menu__link">Мой плейлист</a>
+              </li>
+              <li class="menu__item">
+                <a href="../signin.html" class="menu__link">Войти</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="main__centerblock centerblock">
+          <div class="centerblock__search search">
+            <svg class="search__svg">
+              <use xlink:href="/icon/sprite.svg#icon-search" />
+            </svg>
+            <input
+              class="search__text"
+              type="search"
+              placeholder="Поиск"
+              name="search"
+            />
+          </div>
+          <section class="not-found">
+            <h1>404</h1>
+            <p class="title">
+              Страница не найдена
+              <img
+                class="logo__image"
+                src="/img/smile_crying.png"
+                alt="Слезы"
+              />
+            </p>
+            <p class="subtitle">
+              Возможно, она была удалена<br />или перенесена на другой адрес
+            </p>
+            <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink>
+          </section>
+        </div>
+        <div class="main__sidebar sidebar">
+          <div class="sidebar__personal">
+            <div class="sidebar__icon">
+              <svg>
+                <use xlink:href="/icon/sprite.svg#logout" />
+              </svg>
+            </div>
+          </div>
+          <div class="sidebar__block">
+            <div class="sidebar__list">
+              <div class="sidebar__item">
+                <a class="sidebar__link" href="#">
+                  <img
+                    class="sidebar__img"
+                    src="/img/playlist01.png"
+                    alt="day's playlist"
+                  />
+                </a>
+              </div>
+              <div class="sidebar__item">
+                <a class="sidebar__link" href="#">
+                  <img
+                    class="sidebar__img"
+                    src="/img/playlist02.png"
+                    alt="day's playlist"
+                  />
+                </a>
+              </div>
+              <div class="sidebar__item">
+                <a class="sidebar__link" href="#">
+                  <img
+                    class="sidebar__img"
+                    src="/img/playlist03.png"
+                    alt="day's playlist"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <div class="bar">
+        <div class="bar__content">
+          <div class="bar__player-progress" />
+          <div class="bar__player-block">
+            <div class="bar__player player">
+              <div class="player__controls">
+                <div class="player__btn-prev">
+                  <svg class="player__btn-prev-svg">
+                    <use xlink:href="/icon/sprite.svg#icon-prev" />
+                  </svg>
+                </div>
+                <div class="player__btn-play _btn">
+                  <svg class="player__btn-play-svg">
+                    <use xlink:href="/icon/sprite.svg#icon-play" />
+                  </svg>
+                </div>
+                <div class="player__btn-next">
+                  <svg class="player__btn-next-svg">
+                    <use xlink:href="/icon/sprite.svg#icon-next" />
+                  </svg>
+                </div>
+                <div class="player__btn-repeat _btn-icon">
+                  <svg class="player__btn-repeat-svg">
+                    <use xlink:href="/icon/sprite.svg#icon-repeat" />
+                  </svg>
+                </div>
+                <div class="player__btn-shuffle _btn-icon">
+                  <svg class="player__btn-shuffle-svg">
+                    <use xlink:href="/icon/sprite.svg#icon-shuffle" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="player__track-play track-play">
+                <div class="track-play__contain">
+                  <div class="track-play__image">
+                    <svg class="track-play__svg">
+                      <use xlink:href="/icon/sprite.svg#icon-note" />
+                    </svg>
+                  </div>
+                  <div class="track-play__author">
+                    <a class="track-play__author-link" href="http://"
+                      >Ты та...</a
+                    >
+                  </div>
+                  <div class="track-play__album">
+                    <a class="track-play__album-link" href="http://">Баста</a>
+                  </div>
+                </div>
+
+                <div class="track-play__like-dis">
+                  <div class="track-play__like _btn-icon">
+                    <svg class="track-play__like-svg">
+                      <use xlink:href="/icon/sprite.svg#icon-like" />
+                    </svg>
+                  </div>
+                  <div class="track-play__dislike _btn-icon">
+                    <svg class="track-play__dislike-svg">
+                      <use xlink:href="/icon/sprite.svg#icon-dislike" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bar__volume-block volume">
+              <div class="volume__content">
+                <div class="volume__image">
+                  <svg class="volume__svg">
+                    <use xlink:href="/icon/sprite.svg#icon-volume" />
+                  </svg>
+                </div>
+                <div class="volume__progress _btn">
+                  <input
+                    class="volume__progress-line _btn"
+                    type="range"
+                    name="range"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <section class="not-found">
-      <h1>404</h1>
-      <p class="title">
-        Страница не найдена
-        <img class="logo__image" src="/img/smile_crying.png" alt="Слезы" />
-      </p>
-      <p class="subtitle">
-        Возможно, она была удалена<br />или перенесена на другой адрес
-      </p>
-      <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink>
-    </section>
-  </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">

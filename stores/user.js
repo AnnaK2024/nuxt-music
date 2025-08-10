@@ -11,10 +11,18 @@ export const useUserStore = defineStore("user", () => {
     username.value = name;
     email.value = mail;
     id.value = userId;
+
+    // Сохраняем в localStorage
+    localStorage.setItem("username", name);
+    localStorage.setItem("email", mail);
+    localStorage.setItem("id", userId);
   }
 
   function setToken(newToken) {
     token.value = newToken;
+
+    // Сохраняем токен
+    localStorage.setItem("token", newToken);
   }
 
   function clear() {
@@ -22,6 +30,20 @@ export const useUserStore = defineStore("user", () => {
     email.value = null;
     id.value = null;
     token.value = null;
+
+    // Удаляем из localStorage
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("id");
+    localStorage.removeItem("token");
+  }
+
+  // Загружаем данные из localStorage при инициализации
+  function loadFromStorage() {
+    username.value = localStorage.getItem("username");
+    email.value = localStorage.getItem("email");
+    id.value = localStorage.getItem("id");
+    token.value = localStorage.getItem("token");
   }
 
   return {
@@ -32,5 +54,6 @@ export const useUserStore = defineStore("user", () => {
     setUser,
     setToken,
     clear,
+    loadFromStorage,
   };
 });
