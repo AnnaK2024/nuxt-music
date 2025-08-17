@@ -61,15 +61,12 @@
             }}
           </button>
 
-          <!-- Показываем кнопку только если isRegistration === false -->
           <NuxtLink
-            v-if="!isRegistration"
-            to="/signup"
             class="modal__btn-switch"
+            :to="isRegistration ? '/login' : '/signup'"
           >
-            Зарегистрироваться
+            {{ isRegistration ? "Войти" : "Зарегистрироваться" }}
           </NuxtLink>
-
         </form>
       </div>
     </div>
@@ -77,38 +74,43 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const props = defineProps({
-  isRegistration: Boolean,
+  isRegistration: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const { login, signup, loading } = useAuth();
+const router = useRouter();
+const emit = defineEmits(["submit", "error"]);
+const { login, signup} = useAuth();
 
+const loading = ref(false);
 const username = ref("");
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 
-// Если хотите сбрасывать поля при смене режима
-// watch(
-//   () => props.isRegistration,
-//   () => {
-//     username.value = "";
-//     email.value = "";
-//     password.value = "";
-//     confirmPassword.value = "";
-//   }
-// );
-
-const router = useRouter();
-
 const handleSubmit = async () => {
+  if (!email.value.trim() || !password.value.trim()) {
+    throw showError({
+      statusCode: 400,
+      message: "Заполните email и пароль",
+    });
+  }
   if (props.isRegistration && password.value !== confirmPassword.value) {
     alert("Пароли не совпадают");
     return;
   }
+
+  emit("submit", {
+    email: email.value,
+    password: password.value,
+    username: username.value,
+  });
 
   try {
     if (props.isRegistration) {

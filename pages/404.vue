@@ -28,11 +28,7 @@
             <h1>404</h1>
             <p class="title">
               Страница не найдена
-              <img
-                class="logo__image"
-                src="/img/smile_crying.png"
-                alt="Слезы"
-              />
+              <img class="logo__image" src="/img/smile_crying.png" />
             </p>
             <p class="subtitle">
               Возможно, она была удалена<br />или перенесена на другой адрес
@@ -128,7 +124,6 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { useHead } from "#imports";
 
@@ -184,8 +179,6 @@ useHead({
 
 .logo__image {
   width: 113.33px;
-  height: 17px;
-  color: #181818;
 }
 
 .nav__burger {
@@ -649,5 +642,4 @@ useHead({
 .volume__progress-line {
   width: 109px;
 }
-
 </style>

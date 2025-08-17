@@ -70,6 +70,18 @@
                 }}</a>
               </div>
             </div>
+                            <div class="track-play__like-dis">
+                  <div class="track-play__like _btn-icon">
+                    <svg class="track-play__like-svg">
+                      <use xlink:href="/icons/sprite.svg#icon-like" />
+                    </svg>
+                  </div>
+                  <div class="track-play__dislike _btn-icon">
+                    <svg class="track-play__dislike-svg">
+                      <use xlink:href="/icons/sprite.svg#icon-dislike" />
+                    </svg>
+                  </div>
+                </div>
           </div>
         </div>
         <div class="bar__volume-block">
