@@ -92,15 +92,15 @@ const password = ref("");
 const confirmPassword = ref("");
 
 // Если хотите сбрасывать поля при смене режима
-watch(
-  () => props.isRegistration,
-  () => {
-    username.value = "";
-    email.value = "";
-    password.value = "";
-    confirmPassword.value = "";
-  }
-);
+// watch(
+//   () => props.isRegistration,
+//   () => {
+//     username.value = "";
+//     email.value = "";
+//     password.value = "";
+//     confirmPassword.value = "";
+//   }
+// );
 
 const router = useRouter();
 
