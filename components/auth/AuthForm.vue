@@ -17,7 +17,7 @@
             type="text"
             name="username"
             placeholder="Имя пользователя"
-            required
+            
           />
 
           <input
@@ -27,7 +27,7 @@
             type="email"
             name="email"
             placeholder="Почта"
-            required
+            
           />
 
           <input
@@ -37,7 +37,7 @@
             type="password"
             name="password"
             placeholder="Пароль"
-            required
+            
           />
 
           <input
@@ -48,7 +48,7 @@
             type="password"
             name="confirmPassword"
             placeholder="Повторите пароль"
-            required
+            
           />
 
           <button type="submit" class="modal__btn" :disabled="loading">
