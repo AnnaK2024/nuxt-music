@@ -14,7 +14,7 @@ export const useCategoryTracks = () => {
 
     try {
       // Запрос к API категории по ID
-      const response = await fetch(`${API_URL}/catalog/categories/${categoryId}`);
+      const response = await fetch(`${API_URL}/catalog/selection/${categoryId}`);
       if (!response.ok) {
         throw new Error("Не удалось получить данные категории");
       }

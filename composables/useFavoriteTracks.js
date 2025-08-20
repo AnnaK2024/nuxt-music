@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
+const API_URL = "https://webdev-music-003b5b991590.herokuapp.com";
+
 export const useFavoritesStore = defineStore("favorites", () => {
   const favorites = ref([]);
 
