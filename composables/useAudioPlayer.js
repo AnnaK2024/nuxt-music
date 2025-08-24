@@ -126,16 +126,6 @@ export function useAudioPlayer() {
   };
 
   watch(
-    () => playerStore.currentTrack,
-    (newTrack) => {
-      if (newTrack) {
-        console.log("currentTrack изменился, запускаем playTrack", newTrack);
-        playTrack(newTrack);
-      }
-    }
-  );
-
-  watch(
   () => playerStore.currentTrack,
   (newTrack) => {
     if (newTrack) {

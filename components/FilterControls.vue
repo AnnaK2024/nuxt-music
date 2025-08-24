@@ -4,26 +4,27 @@
 
     <div class="filter__wrapper">
       <div
-        class="filter__button button-author _btn-text"
-        :class="{ active: activeFilter === 'author' }"
-        @click="toggleFilter('author')"
+          class="filter__button button-author _btn-text"
+          :class="{ active: activeDropdown === 'author' }"
+          @click="toggleDropdown('author')"
       >
         исполнителю
       </div>
+
       <div
-        v-show="activeFilter === 'author'"
-        class="filter__dropdown"
-        :class="{ active: activeFilter === 'author' }"
+          v-show="activeDropdown === 'author'"
+          class="filter__dropdown"
+          :class="{ active: activeDropdown === 'author' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-              v-for="item in authorItems"
-              :key="item"
-              class="filter__item"
-              @click="toggleFilter('author')"
+                v-for="author in tracksStore.availableAuthors"
+                :key="author"
+                class="filter__item"
+                @click="selectFilterValue('author', author)"
             >
-              {{ item }}
+              {{ author }}
             </li>
           </ul>
         </div>
@@ -32,26 +33,27 @@
 
     <div class="filter__wrapper">
       <div
-        class="filter__button button-year _btn-text"
-        :class="{ active: activeFilter === 'year' }"
-        @click="toggleFilter('year')"
+          class="filter__button button-year _btn-text"
+          :class="{ active: activeDropdown === 'year' }"
+          @click="toggleDropdown('year')"
       >
         году выпуска
       </div>
+
       <div
-        v-show="activeFilter === 'year'"
-        class="filter__dropdown"
-        :class="{ active: activeFilter === 'year' }"
+          v-show="activeDropdown === 'year'"
+          class="filter__dropdown"
+          :class="{ active: activeDropdown === 'year' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-              v-for="item in yearItems"
-              :key="item"
-              class="filter__item"
-              @click="toggleFilter('year')"
+                v-for="year in tracksStore.availableYears"
+                :key="year"
+                class="filter__item"
+                @click="selectFilterValue('year', year)"
             >
-              {{ item }}
+              {{ year }}
             </li>
           </ul>
         </div>
@@ -60,94 +62,99 @@
 
     <div class="filter__wrapper">
       <div
-        class="filter__button button-genre _btn-text"
-        :class="{ active: activeFilter === 'genre' }"
-        @click="toggleFilter('genre')"
+          class="filter__button button-genre _btn-text"
+          :class="{ active: activeDropdown === 'genre' }"
+          @click="toggleDropdown('genre')"
       >
         жанру
       </div>
+
       <div
-        v-show="activeFilter === 'genre'"
-        class="filter__dropdown"
-        :class="{ active: activeFilter === 'genre' }"
+          v-show="activeDropdown === 'genre'"
+          class="filter__dropdown"
+          :class="{ active: activeDropdown === 'genre' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-              v-for="item in genreItems"
-              :key="item"
-              class="filter__item"
-              @click="toggleFilter('genre')"
+                v-for="genre in tracksStore.availableGenres"
+                :key="genre"
+                class="filter__item"
+                @click="selectFilterValue('genre', genre)"
             >
-              {{ item }}
+              {{ genre }}
             </li>
           </ul>
         </div>
+      </div>
+    </div>
+
+    <div class="filter__wrapper">
+      <div
+          class="filter__button button-genre _btn-text"
+          @click="tracksStore.clearFilters()"
+      >
+        Сбросить фильтр
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-const activeFilter = ref(null);
+import {ref} from "vue";
+import {useTracksStore} from "~/stores/tracks";
 
-const { data: response } = await useFetch(
-  "https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/",
-  { transform: (response) => response.data }
-);
+const tracksStore = useTracksStore();
+const activeDropdown = ref(null);
 
-const tracks = computed(() => response.value || []);
+function toggleDropdown(kind) {
+  if (activeDropdown.value === kind) {
+    activeDropdown.value = null;
+  } else {
+    activeDropdown.value = kind;
+  }
+}
 
-const authorItems = computed(() => {
-  if (!tracks.value) return [];
-  const items = new Set();
-  tracks.value.forEach((track) => {
-    if (track.author) {
-      items.add(track.author);
+function selectFilterValue(kind, value) {
+  if (kind === "author") {
+    const sameValue =
+        tracksStore.filters.author &&
+        String(tracksStore.filters.author) === String(value);
+
+    if (sameValue) {
+      tracksStore.setFilters({author: null});
+    } else {
+      tracksStore.setFilters({author: String(value)});
     }
-  });
-  return Array.from(items).sort((a, b) => {
-    if (a === "Неизвестно") return 1;
-    if (b === "Неизвестно") return -1;
-    return a.localeCompare(b);
-  });
-});
+  }
 
-const yearItems = computed(() => {
-  if (!tracks.value) return [];
-  const items = new Set();
-  tracks.value.forEach((track) => {
-    const year = track.release_date?.split("<")[0] || "Неизвестно";
-    items.add(year);
-  });
-  return Array.from(items).sort((a, b) => {
-    if (a === "Неизвестно") return 1;
-    if (b === "Неизвестно") return -1;
-    return b.localeCompare(a);
-  });
-});
+  if (kind === "year") {
+    const sameValue =
+        tracksStore.filters.year &&
+        String(tracksStore.filters.year) === String(value);
 
-const genreItems = computed(() => {
-  if (!tracks.value) return [];
-  const items = new Set();
-  tracks.value.forEach((track) => {
-    if (Array.isArray(track.genre)) {
-      track.genre.forEach((g) => g && items.add(g.toLowerCase().trim()));
-    } else if (track.genre) {
-      items.add(track.genre.toLowerCase().trim());
+    if (sameValue) {
+      tracksStore.setFilters({year: null});
+    } else {
+      tracksStore.setFilters({year: String(value)});
     }
-  });
-  return Array.from(items).sort((a, b) => {
-    if (a === "неизвестно") return 1;
-    if (b === "неизвестно") return -1;
-    return a.localeCompare(b);
-  });
-});
+  }
 
-const toggleFilter = (filter) => {
-  console.log(filter);
-  activeFilter.value = activeFilter.value === filter ? null : filter;
-};
+  if (kind === "genre") {
+    const normalizedValue = String(value).toLowerCase().trim();
+    const sameValue =
+        tracksStore.filters.genre &&
+        String(tracksStore.filters.genre) === normalizedValue;
+
+    if (sameValue) {
+      tracksStore.setFilters({genre: null});
+    } else {
+      tracksStore.setFilters({genre: normalizedValue});
+    }
+  }
+
+  activeDropdown.value = null;
+}
 </script>
 
 <style lang="scss" scoped>

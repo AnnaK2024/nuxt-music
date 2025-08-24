@@ -9,7 +9,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
   // Загрузка избранного с сервера
   async function loadFavorites() {
     try {
-      const res = await fetch("/api/favorites"); // адаптируйте URL под ваш API
+      const res = await fetch(`${API_URL}/catalog/track/favorite/all/`); 
       if (!res.ok) throw new Error("Ошибка загрузки избранных треков");
       const data = await res.json();
       favorites.value = data;
@@ -21,7 +21,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
   // Добавление трека в избранное (с сервером)
   async function addFavorite(track) {
     try {
-      const res = await fetch("/api/favorites", {
+      const res = await fetch(`${API_URL}/catalog/track/<id>/favorite/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(track),
