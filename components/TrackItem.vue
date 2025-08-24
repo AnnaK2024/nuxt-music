@@ -1,11 +1,12 @@
 <template>
   <div class="playlist__item">
-    <div class="playlist__track track" @click="handleClick">
+    <div class="playlist__track track">
       <div class="track__title">
         <div class="track__title-image">
-          <svg class="track__title-svg">
+          <svg class="track__title-svg" @click="handleClick">
             <use xlink:href="/icons/sprite.svg#icon-note" />
           </svg>
+          <div v-if="isCurrentTrack" class="pulse-dot" />
         </div>
         <div class="track__title-text">
           <a class="track__title-link" href="http:#">
@@ -21,16 +22,24 @@
         <a class="track__album-link" href="http:#">{{ track.album }}</a>
       </div>
       <div class="track__time">
-        <svg class="track__time-svg">
+        <svg
+          class="track__time-svg"
+          :class="{ 'track__time-svg--liked': isLiked }"
+          @click.stop="handleLike"
+        >
           <use xlink:href="/icons/sprite.svg#icon-like" />
         </svg>
-        <span class="track__time-text" />{{ formatTime(track.duration_in_seconds) }}
+        <span class="track__time-text" />{{
+          formatTime(track.duration_in_seconds)
+        }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { toRef, computed } from "vue";
+
 const props = defineProps({
   track: {
     type: Object,
@@ -38,10 +47,31 @@ const props = defineProps({
   },
 });
 
-const { playTrack } = useAudioPlayer();
+const track = toRef(props, "track"); // привязка к конкретному пропсу
+
+const { playTrack, currentTrack } = useAudioPlayer();
+const tracksStore = useTracksStore();
+
+// Проверяем, лайкнут ли уже трек
+const isLiked = computed(() =>
+  tracksStore.favoriteTrackIds.includes(String(track.value.id))
+);
+
+// Проверяем, является ли трек текущим
+const isCurrentTrack = computed(
+  () =>
+    !!(
+      currentTrack.value &&
+      String(currentTrack.value.id) === String(track.value.id)
+    )
+);
 
 const handleClick = () => {
-  playTrack(props.track);
+  playTrack(track.value);
+};
+
+const handleLike = () => {
+  tracksStore.toggleFavorite(track.value.id);
 };
 </script>
 
@@ -83,6 +113,7 @@ const handleClick = () => {
 }
 
 .track__title-image {
+  position: relative;
   width: 51px;
   height: 51px;
   padding: 16px;
@@ -104,6 +135,33 @@ const handleClick = () => {
   height: 17px;
   fill: transparent;
   stroke: #4e4e4e;
+  cursor: pointer;
+}
+
+.pulse-dot {
+  position: absolute;
+  top: 6px; /* подкорректируйте по дизайну */
+  right: 6px; /* подкорректируйте по дизайну */
+  width: 10px;
+  height: 10px;
+  background-color: #ad61ff;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .track__title-link {
@@ -159,8 +217,12 @@ const handleClick = () => {
   margin-right: 17px;
   fill: transparent;
   stroke: #696969;
+  transition: fill 0.2s ease;
 }
 
+.track__time-svg--liked {
+  fill: #ad61ff;
+}
 .track__time-text {
   font-style: normal;
   font-weight: 400;

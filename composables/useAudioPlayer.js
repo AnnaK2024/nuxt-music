@@ -6,6 +6,7 @@ export function useAudioPlayer() {
 
   const currentTime = ref(0);
   const duration = ref(0);
+  const currentTrack = ref(null);
 
   const initPlayer = (audioElement) => {
     playerStore.setAudioRef(audioElement);
@@ -39,6 +40,7 @@ export function useAudioPlayer() {
         .then(() => {
           playerStore.setPlaying(true);
           playerStore.setCurrentTrack(track);
+          currentTrack.value = track;
           duration.value = playerStore.audioRef.duration || 0;
         })
         .catch((e) => {
@@ -131,6 +133,7 @@ export function useAudioPlayer() {
     if (newTrack) {
       console.log("currentTrack изменился, запускаем playTrack", newTrack);
       playTrack(newTrack);
+      currentTrack.value = newTrack;
     }
   }
 );
@@ -178,5 +181,6 @@ watch(
     toggleShuffle,
     currentTime,
     duration,
+    currentTrack,
   };
 }

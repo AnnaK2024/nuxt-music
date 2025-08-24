@@ -1,29 +1,33 @@
 <template>
   <NuxtLayout name="default">
-    <NavBar />
     <div class="favorites__content">
-      <h2>Избранные треки</h2>
-      <div v-if="favorites.length === 0">
+      <h2>Мои треки</h2>
+      <div v-if="favoriteTracks.length === 0" class="empty-state">
         <p>Нет избранных треков.</p>
       </div>
       <div v-else>
-        <PlayList :tracks="favorites" />
+        <div
+          v-for="track in favoriteTracks"
+          :key="track.id"
+          class="playlist__item"
+        >
+          <PlayList />
+        </div>
       </div>
-    </div>
-    <PlayerBar />
-  </NuxtLayout>
+      <PlayerBar /></div
+  ></NuxtLayout>
 </template>
 
 <script setup>
-import { useFavoritesStore } from '~/stores/user.js';
-import { onMounted } from 'vue';
+import { computed } from "vue";
+import { useTracksStore } from "@/stores/tracks";
 
-const favoritesStore = useFavoritesStore();
-const favorites = favoritesStore.favorites;
+const tracksStore = useTracksStore();
 
-// Загрузка избранных треков при монтировании компонента
-onMounted(() => {
-  favoritesStore.loadFavorites();
+const favoriteTracks = computed(() => {
+  return tracksStore.tracks.filter((track) =>
+    tracksStore.favoriteTrackIds.includes(String(track.id))
+  );
 });
 </script>
 

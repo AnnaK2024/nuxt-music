@@ -14,14 +14,15 @@
 </template>
 
 <script setup>
-import TrackItem from "~/components/track/TrackItem.vue";
 import { useRoute } from "vue-router";
 import { watch } from "vue";
-import { useHead } from "#imports"; // или "@vueuse/head" / "nuxt/app"
+import { useHead } from "#imports";
+import TrackItem from "~/components/TrackItem.vue";
 import { useCategoryTracks } from "~/composables/useCategoryTracks";
 
 const route = useRoute();
-const { tracks, categoryName, loading, error, fetchCategoryData } = useCategoryTracks();
+const { tracks, categoryName, loading, error, fetchCategoryData } =
+  useCategoryTracks();
 
 // Обновление заголовка страницы при изменении названия категории
 watch(categoryName, (newName) => {

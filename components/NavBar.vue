@@ -19,10 +19,10 @@
     <div class="nav__menu menu" :class="{ 'menu--open': isMenuOpen }">
       <ul class="menu__list">
         <li class="menu__item">
-          <NuxtLink to="#" class="menu__link">Главное</NuxtLink>
+          <NuxtLink to="/" class="menu__link">Главное</NuxtLink>
         </li>
         <li class="menu__item">
-          <NuxtLink to="#" class="menu__link">Мой плейлист</NuxtLink>
+          <NuxtLink to="/favorites" class="menu__link">Мой плейлист</NuxtLink>
         </li>
         <li class="menu__item">
           <NuxtLink to="#" class="menu__link" @click="logout">Выйти</NuxtLink>

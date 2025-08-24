@@ -25,16 +25,17 @@
     </div>
 
     <div v-else class="content__playlist playlist">
-      <TrackItem v-for="track in tracks" :key="track.id" :track="track" />
+      <TrackItem v-for="track in tracksStore.filteredTracks" :key="track.id" :track="track"/>
     </div>
   </div>
 </template>
 
 <script setup>
-const { fetchTracks, tracks, loading, error } = useTracks();
+const {loading, error} = useTracks();
+const tracksStore = useTracksStore();
 
 onMounted(() => {
-  fetchTracks();
+  tracksStore.loadTracks();
 });
 </script>
 

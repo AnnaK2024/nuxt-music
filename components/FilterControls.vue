@@ -254,7 +254,6 @@ function selectFilterValue(kind, value) {
   text-decoration: underline;
 }
 
-
 .filter__button {
   font-style: normal;
   font-weight: 400;

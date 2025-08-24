@@ -8,22 +8,23 @@ export const useCategoryTracks = () => {
   const loading = ref(false);
   const error = ref(null);
 
-  const fetchCategoryData = async (categoryId) => {
+  const fetchCategoryData = async (id) => {
     loading.value = true;
     error.value = null;
 
     try {
       // Запрос к API категории по ID
-      const response = await fetch(`${API_URL}/catalog/selection/${categoryId}`);
+      const response = await fetch(`${API_URL}/catalog/selection/${id}`);
       if (!response.ok) {
         throw new Error("Не удалось получить данные категории");
       }
+      
       const data = await response.json();
+      console.log("API Response:", data);
 
-      // Предполагается, что API возвращает объект с названием категории и массивом треков
-      // Внимательно проверьте структуру ответа API и подкорректируйте, если нужно
-      categoryName.value = data.data?.name || "";
-      tracks.value = data.data?.tracks || [];
+      // Проверяем структуру данных
+      categoryName.value = data.data?.name || data.name || "";
+      tracks.value = data.data?.tracks || data.tracks || [];
     } catch (e) {
       console.error("Ошибка при загрузке категории:", e);
       error.value =

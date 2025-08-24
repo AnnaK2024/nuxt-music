@@ -21,7 +21,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
   // Добавление трека в избранное (с сервером)
   async function addFavorite(track) {
     try {
-      const res = await fetch(`${API_URL}/catalog/track/<id>/favorite/`, {
+      const res = await fetch(`${API_URL}/catalog/track/id/favorite/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(track),
@@ -36,7 +36,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
   // Удаление из избранного (с сервером)
   async function removeFavorite(trackId) {
     try {
-      const res = await fetch(`/api/favorites/${trackId}`, {
+      const res = await fetch(`${API_URL}/catalog/track/id/favorite/`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Ошибка удаления из избранного");
