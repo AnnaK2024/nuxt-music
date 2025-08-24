@@ -17,7 +17,7 @@ onMounted(() => {
   const username = localStorage.getItem("username");
 
   if (accessToken && username) {
-    userStore.setUser({ username: "user1", email: "", id: null});
+    userStore.setUser({ username, email: "", id: null })
     userStore.setToken(accessToken);
   } else {
     logout(); // очищаем store и localStorage, перенаправляем на логин
