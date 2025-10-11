@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="default">
-    <div class="centerblock">
+    <div class="main__centerblock">
       <div v-if="loading">Загрузка...</div>
       <div v-else-if="error">{{ error }}</div>
       <div v-else class="centerblock_content">

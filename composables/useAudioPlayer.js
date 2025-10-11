@@ -1,5 +1,5 @@
 import { usePlayerStore } from "~/stores/player";
-import { watch, ref } from "vue";
+import { watch, ref, watchEffect } from "vue";
 
 export function useAudioPlayer() {
   const playerStore = usePlayerStore();
@@ -20,13 +20,11 @@ export function useAudioPlayer() {
 
   const playTrack = (track) => {
     if (!track.track_file) {
-      console.warn("Трек не содержит файл для воспроизведения");
       playerStore.setPlaying(false);
       return;
     }
 
     if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
       playerStore.setPlaying(false);
       return;
     }
@@ -36,7 +34,8 @@ export function useAudioPlayer() {
     playerStore.audioRef.src = track.track_file;
 
     const onCanPlay = () => {
-      playerStore.audioRef.play()
+      playerStore.audioRef
+        .play()
         .then(() => {
           playerStore.setPlaying(true);
           playerStore.setCurrentTrack(track);
@@ -60,11 +59,11 @@ export function useAudioPlayer() {
 
   const play = () => {
     if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
       return;
     }
 
-    playerStore.audioRef.play()
+    playerStore.audioRef
+      .play()
       .then(() => {
         playerStore.setPlaying(true);
       })
@@ -76,7 +75,6 @@ export function useAudioPlayer() {
 
   const pause = () => {
     if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
       return;
     }
 
@@ -116,8 +114,6 @@ export function useAudioPlayer() {
   };
 
   const handleTrackEnd = () => {
-    console.log("Трек закончился");
-
     if (playerStore.isRepeat) {
       playTrack(playerStore.currentTrack);
     } else if (playerStore.hasNext) {
@@ -128,27 +124,22 @@ export function useAudioPlayer() {
   };
 
   watch(
-  () => playerStore.currentTrack,
-  (newTrack) => {
-    if (newTrack) {
-      console.log("currentTrack изменился, запускаем playTrack", newTrack);
-      playTrack(newTrack);
-      currentTrack.value = newTrack;
+    () => playerStore.currentTrack,
+    (newTrack, oldTrack) => {
+      console.log("currentTrack изменился:", oldTrack, "->", newTrack);
+      if (newTrack) {
+        console.log("Запускаем playTrack для нового трека");
+        playTrack(newTrack);
+        currentTrack.value = newTrack;
+      }
     }
-  }
-);
+  );
 
-watch(
-  () => playerStore.isPlaying,
-  (isPlaying) => {
-    if (!playerStore.audioRef) return;
-
-    if (!isPlaying) {
+  watchEffect(() => {
+    if (!playerStore.isPlaying && playerStore.audioRef) {
       playerStore.audioRef.pause();
     }
-  }
-);
-
+  });
 
   const playNext = () => {
     playerStore.playNext();

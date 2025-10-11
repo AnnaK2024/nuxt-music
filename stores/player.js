@@ -11,12 +11,13 @@ export const usePlayerStore = defineStore("player", {
     audioRef: null,
     isRepeat: false,
     isShuffle: false,
+    isRepeatPlaylist: false, // Новый флаг для повторения плейлиста
   }),
 
   getters: {
     hasNext(state) {
       if (!state.playlist.length) return false;
-      if (state.isShuffle) return true;
+      if (state.isShuffle || state.isRepeatPlaylist) return true; // Для shuffle и цикла всегда true
       const currentIndex = state.playlist.findIndex(
         (t) => t.id === state.currentTrack?.id
       );
@@ -63,6 +64,10 @@ export const usePlayerStore = defineStore("player", {
       this.isRepeat = !this.isRepeat;
     },
 
+    toggleRepeatPlaylist() {
+      this.isRepeatPlaylist = !this.isRepeatPlaylist;
+    },
+
     toggleShuffle() {
       this.isShuffle = !this.isShuffle;
     },
@@ -77,8 +82,19 @@ export const usePlayerStore = defineStore("player", {
         const currentIndex = this.playlist.findIndex(
           (t) => t.id === this.currentTrack?.id
         );
-        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % this.playlist.length;
-        this.currentTrack = this.playlist[nextIndex];
+        if (currentIndex === -1) return;
+
+        if (this.isRepeatPlaylist) {
+          const nextIndex = (currentIndex + 1) % this.playlist.length;
+          this.currentTrack = this.playlist[nextIndex];
+        } else {
+          if (currentIndex < this.playlist.length - 1) {
+            this.currentTrack = this.playlist[currentIndex + 1];
+          } else {
+            // Конец плейлиста — остановись (или ничего не делай)
+            this.setPlaying(false);
+          }
+        }
       }
     },
 
@@ -88,7 +104,8 @@ export const usePlayerStore = defineStore("player", {
       const currentIndex = this.playlist.findIndex(
         (t) => t.id === this.currentTrack?.id
       );
-      const prevIndex = currentIndex <= 0 ? this.playlist.length - 1 : currentIndex - 1;
+      const prevIndex =
+        currentIndex <= 0 ? this.playlist.length - 1 : currentIndex - 1;
       this.currentTrack = this.playlist[prevIndex];
     },
   },

@@ -25,8 +25,8 @@ function normalizeGenreName(genre) {
   return String(genre).toLowerCase().trim();
 }
 
+// state — начальные данные (треки, фильтры, фавориты и т.д.)
 export const useTracksStore = defineStore("tracks", {
-  // state — начальные данные (треки, фильтры, фавориты и т.д.)
   state: () => ({
     tracks: [],
     isLoading: false,

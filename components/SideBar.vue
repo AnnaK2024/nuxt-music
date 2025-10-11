@@ -10,9 +10,9 @@
     </div>
     <div class="sidebar__block">
       <div class="sidebar__list">
-        <div 
-          v-for="playlist in playlists" 
-          :key="playlist.id" 
+        <div
+          v-for="playlist in playlists"
+          :key="playlist.id"
           class="sidebar__item"
         >
           <nuxt-link class="sidebar__link" :to="`/categories/${playlist.id}`">

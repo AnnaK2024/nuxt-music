@@ -18,6 +18,7 @@
   ></NuxtLayout>
 </template>
 
+
 <script setup>
 import { computed } from "vue";
 import { useTracksStore } from "@/stores/tracks";
