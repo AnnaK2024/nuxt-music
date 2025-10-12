@@ -18,9 +18,8 @@ export const useCategoryTracks = () => {
       if (!response.ok) {
         throw new Error("Не удалось получить данные категории");
       }
-      
+
       const data = await response.json();
-      console.log("API Response:", data);
 
       // Проверяем структуру данных
       categoryName.value = data.data?.name || data.name || "";

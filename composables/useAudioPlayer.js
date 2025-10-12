@@ -128,7 +128,6 @@ export function useAudioPlayer() {
     (newTrack, oldTrack) => {
       console.log("currentTrack изменился:", oldTrack, "->", newTrack);
       if (newTrack) {
-        console.log("Запускаем playTrack для нового трека");
         playTrack(newTrack);
         currentTrack.value = newTrack;
       }
