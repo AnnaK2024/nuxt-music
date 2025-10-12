@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
 
+function normalizeId(id) {
+  if (id === null || id === undefined) return null;
+  const s = String(id).trim();
+  return s === "" ? null : s;
+}
+
 function extractYearFromReleaseDate(releaseDate) {
   if (!releaseDate) return "Неизвестно";
   const raw = String(releaseDate).split("<")[0].trim();
@@ -133,10 +139,13 @@ export const useTracksStore = defineStore("tracks", {
 
       // Фильтр по избранным
       if (state.filters.onlyFavorites) {
-        filteredList = filteredList.filter((track) =>
-          favoriteIdsSet.has(String(track.id))
-        );
+        filteredList = filteredList.filter((track) => {
+          const id = normalizeId(track?.id);
+          return id ? favoriteIdsSet.has(id) : false;
+        });
       }
+
+      
 
       return filteredList;
     },
@@ -168,6 +177,12 @@ export const useTracksStore = defineStore("tracks", {
         const json = await response.json();
         this.tracks = Array.isArray(json?.data) ? json.data : [];
 
+        this.tracks = this.tracks.map((t, i) => {
+          // пробуем несколько полей, если их нет — генерируем уникальный fallback
+          const chosen = t.id ?? t._id ?? t.trackId ?? `__generated_${i}`;
+          return { ...t, id: chosen };
+        });
+
         // Загружаем подборку
         const selectionsResponse = await fetch(
           "https://webdev-music-003b5b991590.herokuapp.com/catalog/selection/all"
@@ -187,7 +202,26 @@ export const useTracksStore = defineStore("tracks", {
     },
 
     setFilters(patch) {
-      this.filters = { ...this.filters, ...patch };
+      // Создаем копию текущих фильтров
+      const newFilters = { ...this.filters, ...patch };
+
+      // Логика сброса: при установке одного из основных фильтров (author, year, genre) сбрасываем остальные,
+      // но оставляем searchQuery и onlyFavorites без изменений, если они не в patch
+      if (patch.author !== undefined) {
+        newFilters.year = null;
+        newFilters.genre = null;
+      }
+      if (patch.year !== undefined) {
+        newFilters.author = null;
+        newFilters.genre = null;
+      }
+      if (patch.genre !== undefined) {
+        newFilters.author = null;
+        newFilters.year = null;
+      }
+      // searchQuery и onlyFavorites не сбрасывают другие фильтры и не сбрасываются сами
+
+      this.filters = newFilters;
     },
 
     clearFilters() {
@@ -201,10 +235,14 @@ export const useTracksStore = defineStore("tracks", {
     },
 
     toggleFavorite(trackId) {
-      const stringId = String(trackId);
-      const index = this.favoriteTrackIds.indexOf(stringId);
+      const id = normalizeId(trackId);
+      if (!id) {
+        console.warn("toggleFavorite: invalid id, ignoring", trackId);
+        return;
+      }
+      const index = this.favoriteTrackIds.indexOf(id);
       if (index === -1) {
-        this.favoriteTrackIds.push(stringId);
+        this.favoriteTrackIds.push(id);
       } else {
         this.favoriteTrackIds.splice(index, 1);
       }

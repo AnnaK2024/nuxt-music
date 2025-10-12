@@ -17,16 +17,18 @@
     <h2 class="centerblock__h2">Мои треки</h2>
 
     <div v-if="favoriteTracks.length === 0" class="empty-state">
-      <p>Нет избранных треков</p>
+      <p class="no-tracks-message">Нет избранных треков</p>
     </div>
     <div v-else>
-      <div v-for="track in favoriteTracks" :key="track.id" class="playlist__item" ></div>
-        <FilterControls />
-        <PlayList />
+      <PlaylistItem
+        v-for="track in favoriteTracks"
+        :key="track.id"
+        :track="track"
+      />
+      <FilterControls />
     </div>
     <PlayerBar />
-  </NuxtLayout
-  >
+  </NuxtLayout>
 </template>
 
 <script setup>
@@ -40,6 +42,7 @@ const favoriteTracks = computed(() => {
     tracksStore.favoriteTrackIds.includes(String(track.id))
   );
 });
+
 </script>
 
 <style lang="scss" scoped>
@@ -121,5 +124,11 @@ const favoriteTracks = computed(() => {
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
+}
+.no-tracks-message {
+  text-align: left;
+  padding: 20px;
+  color: #666;
+  font-size: 16px;
 }
 </style>

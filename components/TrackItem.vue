@@ -29,9 +29,9 @@
         >
           <use xlink:href="/icons/sprite.svg#icon-like" />
         </svg>
-        <span class="track__time-text" />{{
+        <span class="track__time-text">{{
           formatTime(track.duration_in_seconds)
-        }}
+        }}</span>
       </div>
     </div>
   </div>
@@ -53,9 +53,11 @@ const { playTrack, currentTrack } = useAudioPlayer();
 const tracksStore = useTracksStore();
 
 // Проверяем, лайкнут ли уже трек
-const isLiked = computed(() =>
-  tracksStore.favoriteTrackIds.includes(String(track.value.id))
-);
+const isLiked = computed(() => {
+  const id = track.value?.id;
+  if (id === undefined || id === null || id === "") return false;
+  return tracksStore.favoriteTrackIds.includes(String(id));
+});
 
 // Проверяем, является ли трек текущим
 const isCurrentTrack = computed(
@@ -71,7 +73,9 @@ const handleClick = () => {
 };
 
 const handleLike = () => {
+  console.log("Toggling favorite for id:", track.value?.id);
   tracksStore.toggleFavorite(track.value.id);
+  console.log("favoriteTrackIds:", tracksStore.favoriteTrackIds);
 };
 </script>
 

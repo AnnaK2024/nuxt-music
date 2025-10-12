@@ -4,25 +4,25 @@
 
     <div class="filter__wrapper">
       <div
-          class="filter__button button-author _btn-text"
-          :class="{ active: activeDropdown === 'author' }"
-          @click="toggleDropdown('author')"
+        class="filter__button button-author _btn-text"
+        :class="{ active: activeDropdown === 'author' }"
+        @click="toggleDropdown('author')"
       >
         исполнителю
       </div>
 
       <div
-          v-show="activeDropdown === 'author'"
-          class="filter__dropdown"
-          :class="{ active: activeDropdown === 'author' }"
+        v-show="activeDropdown === 'author'"
+        class="filter__dropdown"
+        :class="{ active: activeDropdown === 'author' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-                v-for="author in tracksStore.availableAuthors"
-                :key="author"
-                class="filter__item"
-                @click="selectFilterValue('author', author)"
+              v-for="author in tracksStore.availableAuthors"
+              :key="author"
+              class="filter__item"
+              @click="selectFilterValue('author', author)"
             >
               {{ author }}
             </li>
@@ -33,25 +33,25 @@
 
     <div class="filter__wrapper">
       <div
-          class="filter__button button-year _btn-text"
-          :class="{ active: activeDropdown === 'year' }"
-          @click="toggleDropdown('year')"
+        class="filter__button button-year _btn-text"
+        :class="{ active: activeDropdown === 'year' }"
+        @click="toggleDropdown('year')"
       >
         году выпуска
       </div>
 
       <div
-          v-show="activeDropdown === 'year'"
-          class="filter__dropdown"
-          :class="{ active: activeDropdown === 'year' }"
+        v-show="activeDropdown === 'year'"
+        class="filter__dropdown"
+        :class="{ active: activeDropdown === 'year' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-                v-for="year in tracksStore.availableYears"
-                :key="year"
-                class="filter__item"
-                @click="selectFilterValue('year', year)"
+              v-for="year in tracksStore.availableYears"
+              :key="year"
+              class="filter__item"
+              @click="selectFilterValue('year', year)"
             >
               {{ year }}
             </li>
@@ -62,25 +62,25 @@
 
     <div class="filter__wrapper">
       <div
-          class="filter__button button-genre _btn-text"
-          :class="{ active: activeDropdown === 'genre' }"
-          @click="toggleDropdown('genre')"
+        class="filter__button button-genre _btn-text"
+        :class="{ active: activeDropdown === 'genre' }"
+        @click="toggleDropdown('genre')"
       >
         жанру
       </div>
 
       <div
-          v-show="activeDropdown === 'genre'"
-          class="filter__dropdown"
-          :class="{ active: activeDropdown === 'genre' }"
+        v-show="activeDropdown === 'genre'"
+        class="filter__dropdown"
+        :class="{ active: activeDropdown === 'genre' }"
       >
         <div class="filter__dropdown-inner">
           <ul class="filter__list">
             <li
-                v-for="genre in tracksStore.availableGenres"
-                :key="genre"
-                class="filter__item"
-                @click="selectFilterValue('genre', genre)"
+              v-for="genre in tracksStore.availableGenres"
+              :key="genre"
+              class="filter__item"
+              @click="selectFilterValue('genre', genre)"
             >
               {{ genre }}
             </li>
@@ -88,21 +88,12 @@
         </div>
       </div>
     </div>
-
-    <div class="filter__wrapper">
-      <div
-          class="filter__button button-genre _btn-text"
-          @click="tracksStore.clearFilters()"
-      >
-        Сбросить фильтр
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import {ref} from "vue";
-import {useTracksStore} from "~/stores/tracks";
+import { ref } from "vue";
+import { useTracksStore } from "~/stores/tracks";
 
 const tracksStore = useTracksStore();
 const activeDropdown = ref(null);
@@ -118,38 +109,38 @@ function toggleDropdown(kind) {
 function selectFilterValue(kind, value) {
   if (kind === "author") {
     const sameValue =
-        tracksStore.filters.author &&
-        String(tracksStore.filters.author) === String(value);
+      tracksStore.filters.author &&
+      String(tracksStore.filters.author) === String(value);
 
     if (sameValue) {
-      tracksStore.setFilters({author: null});
+      tracksStore.setFilters({ author: null });
     } else {
-      tracksStore.setFilters({author: String(value)});
+      tracksStore.setFilters({ author: String(value) });
     }
   }
 
   if (kind === "year") {
     const sameValue =
-        tracksStore.filters.year &&
-        String(tracksStore.filters.year) === String(value);
+      tracksStore.filters.year &&
+      String(tracksStore.filters.year) === String(value);
 
     if (sameValue) {
-      tracksStore.setFilters({year: null});
+      tracksStore.setFilters({ year: null });
     } else {
-      tracksStore.setFilters({year: String(value)});
+      tracksStore.setFilters({ year: String(value) });
     }
   }
 
   if (kind === "genre") {
     const normalizedValue = String(value).toLowerCase().trim();
     const sameValue =
-        tracksStore.filters.genre &&
-        String(tracksStore.filters.genre) === normalizedValue;
+      tracksStore.filters.genre &&
+      String(tracksStore.filters.genre) === normalizedValue;
 
     if (sameValue) {
-      tracksStore.setFilters({genre: null});
+      tracksStore.setFilters({ genre: null });
     } else {
-      tracksStore.setFilters({genre: normalizedValue});
+      tracksStore.setFilters({ genre: normalizedValue });
     }
   }
 
@@ -180,7 +171,6 @@ function selectFilterValue(kind, value) {
 }
 .filter__wrapper {
   position: relative;
-  padding-right: 15px;
 }
 
 .filter__dropdown {

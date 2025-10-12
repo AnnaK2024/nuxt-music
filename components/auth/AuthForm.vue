@@ -17,7 +17,6 @@
             type="text"
             name="username"
             placeholder="Имя пользователя"
-            
           />
 
           <input
@@ -27,7 +26,6 @@
             type="email"
             name="email"
             placeholder="Почта"
-            
           />
 
           <input
@@ -37,7 +35,6 @@
             type="password"
             name="password"
             placeholder="Пароль"
-            
           />
 
           <input
@@ -48,10 +45,17 @@
             type="password"
             name="confirmPassword"
             placeholder="Повторите пароль"
-            
           />
 
-          <button type="submit" class="modal__btn" :disabled="loading">
+          <button
+            type="submit"
+            class="modal__btn"
+            :class="{
+              'modal__btn--login': !isRegistration,
+              'modal__btn--register': isRegistration,
+            }"
+            :disabled="loading"
+          >
             {{
               loading
                 ? "Подождите..."
@@ -61,11 +65,13 @@
             }}
           </button>
 
+          <!-- Показываем ссылку‑кнопку только в режиме логина -->
           <NuxtLink
+            v-if="!isRegistration"
             class="modal__btn-switch"
-            :to="isRegistration ? '/login' : '/signup'"
+            to="/signup"
           >
-            {{ isRegistration ? "Войти" : "Зарегистрироваться" }}
+            Зарегистрироваться
           </NuxtLink>
         </form>
       </div>
@@ -86,7 +92,7 @@ const props = defineProps({
 
 const router = useRouter();
 const emit = defineEmits(["submit", "error"]);
-const { login, signup} = useAuth();
+const { login, signup } = useAuth();
 
 const loading = ref(false);
 const username = ref("");
@@ -241,7 +247,7 @@ const handleSubmit = async () => {
   background-color: #580ea2; /* фиолетовый */
   border-radius: 6px;
   border: none;
-  margin-top: 30px;
+
   color: #ffffff;
   font-weight: 400;
   font-size: 18px;
@@ -291,5 +297,32 @@ const handleSubmit = async () => {
 .modal__btn-switch:active {
   background-color: #d9d9d9; /* серый фон */
   border-color: #a6a6a6; /* темнее рамка */
+}
+
+/* Стили для кнопки "Войти" (в окне входа) */
+.modal__btn--login {
+  background-color: #580ea2; /* Синий цвет для входа */
+  color: white;
+  margin-top: 30px;
+}
+
+.modal__btn--login:hover {
+  background-color: #3f007d; /* Темнее при наведении */
+}
+
+/* Стили для кнопки "Зарегистрироваться" (в окне регистрации) */
+.modal__btn--register {
+  background-color: #580ea2; /* Зеленый цвет для регистрации */
+  color: white;
+}
+
+.modal__btn--register:hover {
+  background-color: #3f007d; /* Темнее при наведении */
+}
+
+/* Отключенное состояние (для обеих кнопок) */
+.modal__btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

@@ -19,7 +19,7 @@
     <div class="nav__menu menu" :class="{ 'menu--open': isMenuOpen }">
       <ul class="menu__list">
         <li class="menu__item">
-          <NuxtLink to="/" class="menu__link">Главное</NuxtLink>
+          <NuxtLink to="/" class="menu__link" @click="handleMainClick">Главное</NuxtLink>
         </li>
         <li class="menu__item">
           <NuxtLink to="/favorites" class="menu__link">Мой плейлист</NuxtLink>
@@ -34,15 +34,21 @@
 
 <script setup>
 import { ref } from "vue";
+import { useTracksStore } from '~/stores/tracks';  // Импорт твоего store (путь может быть ~/stores/tracks.js)
 
-const { logout } = useAuth()
-
+const { logout } = useAuth();  // Предполагаю, что useAuth уже импортирован глобально
 const isMenuOpen = ref(false);
+const tracksStore = useTracksStore();  // Экземпляр store
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
 }
+
+function handleMainClick() {
+  tracksStore.clearFilters();  // Сброс всех фильтров через store
+}
 </script>
+
 
 <style scoped lang="scss">
 .main__nav {

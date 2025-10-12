@@ -12,17 +12,22 @@
         name="search"
       />
     </div>
-
     <div v-if="loading">Загрузка...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else class="centerblock_content">
       <h2 class="centerblock__h2">{{ categoryName }}</h2>
+      <FilterControls />
       <div class="content_playlist playlist">
-        <TrackItem v-for="track in tracks" :key="track.id" :track="track" />
+        <div v-if="filteredTracks.length === 0" class="no-tracks-message">
+          Нет треков, соответствующих выбранным фильтрам.
+        </div>
+        <TrackItem
+          v-for="track in filteredTracks"
+          :key="track.id"
+          :track="track"
+        />
       </div>
     </div>
-
-    <FilterControls />
   </NuxtLayout>
 </template>
 
@@ -31,9 +36,9 @@ import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useHead } from "#imports";
 import TrackItem from "~/components/TrackItem.vue";
-import FilterControls from "~/components/FilterControls.vue";
 import { useCategoryTracks } from "~/composables/useCategoryTracks";
 import { useTracksStore } from "~/stores/tracks";
+import FilterControls from "~/components/FilterControls.vue";
 
 const route = useRoute();
 const tracksStore = useTracksStore();
@@ -41,10 +46,54 @@ const tracksStore = useTracksStore();
 const { tracks, categoryName, loading, error, fetchCategoryData } =
   useCategoryTracks();
 
-// computed-привязка для v-model к Pinia-стору
+// computed-привязка для v-model к Pinia-стору (оставлено без изменений)
 const searchQuery = computed({
   get: () => tracksStore.filters.searchQuery,
   set: (val) => tracksStore.setFilters({ searchQuery: val }),
+});
+
+// Новый computed для фильтрации треков категории (адаптируй логику под свой store)
+const filteredTracks = computed(() => {
+  let filtered = tracks.value || []; // Начинаем с массива tracks
+
+  // Фильтр по автору
+  if (tracksStore.filters.author) {
+    filtered = filtered.filter(
+      (track) => track.author === tracksStore.filters.author
+    );
+  }
+
+  // Фильтр по году
+  if (tracksStore.filters.year) {
+    filtered = filtered.filter(
+      (track) => track.year === tracksStore.filters.year
+    );
+  }
+
+  // Фильтр по жанру
+  if (tracksStore.filters.genre) {
+    filtered = filtered.filter(
+      (track) => track.genre === tracksStore.filters.genre
+    );
+  }
+
+  // Фильтр по поисковому запросу (по названию, автору, альбому — адаптируй под свои поля)
+  if (tracksStore.filters.searchQuery) {
+    const query = tracksStore.filters.searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (track) =>
+        track.name?.toLowerCase().includes(query) ||
+        track.author?.toLowerCase().includes(query) ||
+        track.album?.toLowerCase().includes(query)
+    );
+  }
+
+  // Фильтр по избранным (предполагаю, что у трека есть поле isFavorite или similar)
+  if (tracksStore.filters.onlyFavorites) {
+    filtered = filtered.filter((track) => track.isFavorite); // Адаптируй под своё поле (например, track.favorite)
+  }
+
+  return filtered;
 });
 
 // Обновление заголовка страницы при изменении названия категории
@@ -145,5 +194,12 @@ watch(
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
+}
+
+.no-tracks-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 16px;
 }
 </style>

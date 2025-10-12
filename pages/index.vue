@@ -5,12 +5,11 @@
         <use xlink:href="/icons/sprite.svg#icon-search" />
       </svg>
       <input
-        v-model="searchQuery"
+        v-model="tracksStore.filters.searchQuery"
         class="search__text"
         type="search"
         placeholder="Поиск"
         name="search"
-        @input="tracksStore.setFilters({ searchQuery })"
       />
     </div>
     <h2 class="centerblock__h2">Треки</h2>
@@ -21,11 +20,14 @@
 
 <script setup>
 import { useTracksStore } from "~/stores/tracks";
-import { ref } from "vue";
 
-const searchQuery = ref("");
+// Если нужно загрузить треки при монтировании (добавь, если не делаешь это в store или другом месте)
+import { onMounted } from "vue";
 
 const tracksStore = useTracksStore();
+onMounted(() => {
+  tracksStore.loadTracks();
+});
 </script>
 
 <style lang="scss" scoped>
