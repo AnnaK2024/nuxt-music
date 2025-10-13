@@ -16,10 +16,12 @@
           class="sidebar__item"
         >
           <nuxt-link class="sidebar__link" :to="`/categories/${playlist.id}`">
-            <img
+            <NuxtImg
               class="sidebar__img"
               :src="playlist.image"
               :alt="playlist.name"
+              :placeholder="[15]"
+              
             />
           </nuxt-link>
         </div>

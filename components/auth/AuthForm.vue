@@ -3,9 +3,19 @@
     <div class="container-auth">
       <div class="modal__block">
         <form class="modal__form-login" @submit.prevent="handleSubmit">
-          <NuxtLink to="/">
+          <NuxtLink to="/login">
             <div class="modal__logo">
-              <img src="/img/logo_modal.png" alt="logo" />
+              <NuxtImg
+                alt="логотип Skypro Music"
+                :placeholder="[15]"
+                src="/img/logo_modal.png"
+                width="140px"
+                height="21px"
+                loading="eager"
+                quality="90"
+                format="webp"
+                preload
+              />
             </div>
           </NuxtLink>
 
