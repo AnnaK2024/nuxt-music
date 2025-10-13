@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/user";
+import { useUserStore } from "~/stores/user";
 
 export function useAuth() {
   const API_BASE = "https://webdev-music-003b5b991590.herokuapp.com/user";
@@ -92,6 +92,7 @@ export function useAuth() {
     router.push("/login");
   }
 
+  //обновление Токена
   async function refreshAccessToken() {
     const refresh = getRefreshToken();
     if (!refresh) throw new Error("Нет refresh токена");

@@ -19,14 +19,25 @@
 </template>
 
 <script setup>
-import { useTracksStore } from "~/stores/tracks";
-
-// Если нужно загрузить треки при монтировании (добавь, если не делаешь это в store или другом месте)
 import { onMounted } from "vue";
+import { useTracksStore } from "~/stores/tracks";
+import { useFavoritesStore } from "~/composables/useFavoriteTracks";
 
 const tracksStore = useTracksStore();
-onMounted(() => {
-  tracksStore.loadTracks();
+const favoritesStore = useFavoritesStore();
+
+onMounted(async () => {
+  try {
+    // Запускаем параллельно, если не зависят друг от друга (быстрее)
+    await Promise.all([
+      tracksStore.loadTracks(),
+      favoritesStore.loadFavorites(),
+    ]);
+    console.log("Треки и избранные загружены и синхронизированы");
+  } catch (error) {
+    console.error("Ошибка загрузки данных:", error);
+    // Опционально: уведомление пользователю, например, "Ошибка загрузки. Попробуйте позже."
+  }
 });
 </script>
 

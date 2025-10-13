@@ -1,9 +1,9 @@
 <template>
   <div class="playlist__item">
-    <div class="playlist__track track">
+    <div class="playlist__track track" @click="handleClick">
       <div class="track__title">
         <div class="track__title-image">
-          <svg class="track__title-svg" @click="handleClick">
+          <svg class="track__title-svg">
             <use xlink:href="/icons/sprite.svg#icon-note" />
           </svg>
           <div v-if="isCurrentTrack" class="pulse-dot" />
@@ -39,6 +39,7 @@
 
 <script setup>
 import { toRef, computed } from "vue";
+import { useFavoritesStore } from "~/composables/useFavoriteTracks";
 
 const props = defineProps({
   track: {
@@ -51,6 +52,8 @@ const track = toRef(props, "track"); // привязка к конкретном
 
 const { playTrack, currentTrack } = useAudioPlayer();
 const tracksStore = useTracksStore();
+
+const favoritesStore = useFavoritesStore();
 
 // Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
@@ -72,10 +75,29 @@ const handleClick = () => {
   playTrack(track.value);
 };
 
-const handleLike = () => {
-  console.log("Toggling favorite for id:", track.value?.id);
-  tracksStore.toggleFavorite(track.value.id);
-  console.log("favoriteTrackIds:", tracksStore.favoriteTrackIds);
+const handleLike = async () => {
+  const id = track.value.id;
+  if (!id) {
+    console.warn("Invalid track ID, cannot toggle favorite");
+    return;
+  }
+
+  try {
+    if (isLiked.value) {
+      // Удаляем с сервера
+      await favoritesStore.removeFavorite(id);
+      // Синхронизируем локально
+      tracksStore.toggleFavorite(id);
+    } else {
+      // Добавляем на сервер (передаём полный объект трека)
+      await favoritesStore.addFavorite(track.value);
+      // Синхронизируем локально
+      tracksStore.toggleFavorite(id);
+    }
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+    // Опционально: покажи пользователю ошибку (например, через toast или alert)
+  }
 };
 </script>
 

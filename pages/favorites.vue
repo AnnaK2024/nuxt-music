@@ -33,7 +33,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { useTracksStore } from "@/stores/tracks";
+import { useTracksStore } from "~/stores/tracks";
 
 const tracksStore = useTracksStore();
 

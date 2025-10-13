@@ -145,8 +145,6 @@ export const useTracksStore = defineStore("tracks", {
         });
       }
 
-      
-
       return filteredList;
     },
 
