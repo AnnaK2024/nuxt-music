@@ -36,7 +36,7 @@
           >
         </li>
         <li class="menu__item">
-          <NuxtLink to="/favorites" class="menu__link">Мой плейлист</NuxtLink>
+          <NuxtLink to="/myFavoriteTracks" class="menu__link">Мой плейлист</NuxtLink>
         </li>
         <li class="menu__item">
           <NuxtLink to="#" class="menu__link" @click="logout">Выйти</NuxtLink>

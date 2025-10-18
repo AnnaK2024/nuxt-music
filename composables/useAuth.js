@@ -3,7 +3,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "~/stores/user";
 
 export function useAuth() {
-  const API_BASE = "https://webdev-music-003b5b991590.herokuapp.com/user";
+  const API_URL = "https://webdev-music-003b5b991590.herokuapp.com/user";
   const router = useRouter();
   const userStore = useUserStore();
 
@@ -30,25 +30,40 @@ export function useAuth() {
     error.value = null;
 
     try {
-      const res = await fetch(`${API_BASE}/login/`, {
+      // Шаг 1: Проверяем пользователя и получаем его данные через /user/login/
+      const loginRes = await fetch(`${API_URL}/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Ошибка входа");
+      if (!loginRes.ok) {
+        const err = await loginRes.json();
+        throw new Error(err.message || "Ошибка входа");
       }
 
-      const data = await res.json();
-      setTokens(data);
+      const userData = await loginRes.json();
 
-      // Обновляем store пользователя
+      // Шаг 2: Получаем токены через /user/token/
+      const tokenRes = await fetch(`${API_URL}/token/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!tokenRes.ok) {
+        const err = await tokenRes.json();
+        throw new Error(err.message || "Ошибка получения токенов");
+      }
+
+      const tokenData = await tokenRes.json();
+      setTokens(tokenData); // Сохраняем access и refresh токены
+
+      // Обновляем store пользователя с данными из /user/login/
       userStore.setUser({
-        username: data.username || email, // если username нет, ставим email
-        email: data.email || email,
-        id: data.id || null,
+        username: userData.username,
+        email: userData.email,
+        id: userData._id, // API возвращает _id, используем как id
       });
 
       await router.push("/");
@@ -65,7 +80,7 @@ export function useAuth() {
     error.value = null;
 
     try {
-      const res = await fetch(`${API_BASE}/signup/`, {
+      const res = await fetch(`${API_URL}/signup/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, username }),
@@ -76,7 +91,7 @@ export function useAuth() {
         throw new Error(err.message || "Ошибка регистрации");
       }
 
-      // Можно не обновлять store, т.к. пользователь еще не залогинен
+      // После успешной регистрации перенаправляем на логин (как в оригинале)
       await router.push("/login");
     } catch (e) {
       error.value = e.message;
@@ -92,12 +107,12 @@ export function useAuth() {
     router.push("/login");
   }
 
-  //обновление Токена
+  // Обновление токена (без изменений, корректно работает с API)
   async function refreshAccessToken() {
     const refresh = getRefreshToken();
     if (!refresh) throw new Error("Нет refresh токена");
 
-    const res = await fetch(`${API_BASE}/token/refresh/`, {
+    const res = await fetch(`${API_URL}/token/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -150,5 +165,6 @@ export function useAuth() {
     logout,
     fetchWithAuth,
     isAuthenticated,
+    getAccessToken,
   };
 }

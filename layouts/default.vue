@@ -19,12 +19,12 @@ import PlayerBar from "~/components/PlayerBar.vue";
 import SideBar from "~/components/SideBar.vue";
 
 useHead({
-  title: "Избранное | Skypro.Music",
+  title: "Моя музыка | Skypro.Music",
   meta: [
     { name: "description", content: "Ваши любимые треки в одном месте" },
-    { property: "og:title", content: "Избранное | Skypro Music" },
+    { property: "og:title", content: "Моя музыка | Skypro Music" },
     { property: "og:site_name", content: "Skypro Music" },
-    { name: "twitter:title", content: "Skypro Music — Избранное" },
+    { name: "twitter:title", content: "Skypro Music — Моя музыка" },
   ],
 });
 </script>

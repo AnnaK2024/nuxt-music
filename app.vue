@@ -6,8 +6,8 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useUserStore } from "@/stores/user";
-import { useAuth } from "@/composables/useAuth";
+import { useUserStore } from "~/stores/user";
+import { useAuth } from "~/composables/useAuth";
 
 const userStore = useUserStore();
 const { logout } = useAuth();
@@ -17,8 +17,8 @@ onMounted(() => {
   const username = localStorage.getItem("username");
 
   if (accessToken && username) {
-    userStore.setUser({ username, email: "", id: null })
-    userStore.setToken(accessToken);
+    // Восстанавливаем данные пользователя из localStorage (username, email, id)
+    userStore.loadFromStorage();
   } else {
     logout(); // очищаем store и localStorage, перенаправляем на логин
   }

@@ -5,7 +5,7 @@ export const useUserStore = defineStore("user", () => {
   const username = ref(null);
   const email = ref(null);
   const id = ref(null);
-  const token = ref(null);
+  // Удалено поле token, так как токены хранятся в localStorage через useAuth
 
   function setUser({ username: name, email: mail, id: userId }) {
     username.value = name;
@@ -18,24 +18,15 @@ export const useUserStore = defineStore("user", () => {
     localStorage.setItem("id", userId);
   }
 
-  function setToken(newToken) {
-    token.value = newToken;
-
-    // Сохраняем токен
-    localStorage.setItem("token", newToken);
-  }
-
   function clear() {
     username.value = null;
     email.value = null;
     id.value = null;
-    token.value = null;
 
     // Удаляем из localStorage
     localStorage.removeItem("username");
     localStorage.removeItem("email");
     localStorage.removeItem("id");
-    localStorage.removeItem("token");
   }
 
   // Загружаем данные из localStorage при инициализации
@@ -43,16 +34,13 @@ export const useUserStore = defineStore("user", () => {
     username.value = localStorage.getItem("username");
     email.value = localStorage.getItem("email");
     id.value = localStorage.getItem("id");
-    token.value = localStorage.getItem("token");
   }
 
   return {
     username,
     email,
     id,
-    token,
     setUser,
-    setToken,
     clear,
     loadFromStorage,
   };

@@ -25,24 +25,35 @@
         :key="track.id"
         :track="track"
       />
-      <FilterControls />
+      <FilterControls :store="favoritesStore" />
     </div>
     <PlayerBar />
   </NuxtLayout>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useTracksStore } from "~/stores/tracks";
+import { computed, onMounted } from "vue";
+import { useFavoritesStore } from "~/stores/favorites";
+import { useHead } from "#imports"
 
-const tracksStore = useTracksStore();
-
-const favoriteTracks = computed(() => {
-  return tracksStore.tracks.filter((track) =>
-    tracksStore.favoriteTrackIds.includes(String(track.id))
-  );
+// Устанавливаем заголовок страницы
+useHead({
+  title: "Мои треки", // Это установит title на "Избранное"
 });
 
+const favoritesStore = useFavoritesStore();
+
+// Используем favorites напрямую из favoritesStore
+const favoriteTracks = computed(() => favoritesStore.favorites); // Изменили: теперь берём из favoritesStore.favorites
+
+onMounted(async () => {
+  try {
+    await favoritesStore.loadFavorites(); // Изменили: теперь вызываем из favoritesStore
+  } catch (error) {
+    console.error("Ошибка загрузки:", error);
+    // Опционально: добавь уведомление пользователю, например, через toast
+  }
+});
 </script>
 
 <style lang="scss" scoped>

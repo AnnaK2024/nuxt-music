@@ -21,7 +21,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { useTracksStore } from "~/stores/tracks";
-import { useFavoritesStore } from "~/composables/useFavoriteTracks";
+import { useFavoritesStore } from "~/stores/favorites";
 
 const tracksStore = useTracksStore();
 const favoritesStore = useFavoritesStore();
@@ -33,10 +33,14 @@ onMounted(async () => {
       tracksStore.loadTracks(),
       favoritesStore.loadFavorites(),
     ]);
+
     console.log("Треки и избранные загружены и синхронизированы");
   } catch (error) {
     console.error("Ошибка загрузки данных:", error);
-    // Опционально: уведомление пользователю, например, "Ошибка загрузки. Попробуйте позже."
+    if (error.response?.status === 401) {
+      await navigateTo("/login");
+      return;
+    }
   }
 });
 </script>

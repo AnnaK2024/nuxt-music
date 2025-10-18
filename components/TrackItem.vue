@@ -39,7 +39,8 @@
 
 <script setup>
 import { toRef, computed } from "vue";
-import { useFavoritesStore } from "~/composables/useFavoriteTracks";
+import { useFavoritesStore } from "~/stores/favorites";
+import { useAudioPlayer } from "~/composables/useAudioPlayer";
 
 const props = defineProps({
   track: {
@@ -48,18 +49,16 @@ const props = defineProps({
   },
 });
 
-const track = toRef(props, "track"); // привязка к конкретному пропсу
+const track = toRef(props, "track");
 
 const { playTrack, currentTrack } = useAudioPlayer();
-const tracksStore = useTracksStore();
-
 const favoritesStore = useFavoritesStore();
 
 // Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
   const id = track.value?.id;
   if (id === undefined || id === null || id === "") return false;
-  return tracksStore.favoriteTrackIds.includes(String(id));
+  return favoritesStore.isFavorite(id).value;
 });
 
 // Проверяем, является ли трек текущим
@@ -82,21 +81,15 @@ const handleLike = async () => {
     return;
   }
 
+  console.log("track.id:", id, "type:", typeof id); // Лог для отладки
+
   try {
-    if (isLiked.value) {
-      // Удаляем с сервера
-      await favoritesStore.removeFavorite(id);
-      // Синхронизируем локально
-      tracksStore.toggleFavorite(id);
-    } else {
-      // Добавляем на сервер (передаём полный объект трека)
-      await favoritesStore.addFavorite(track.value);
-      // Синхронизируем локально
-      tracksStore.toggleFavorite(id);
-    }
+    // Используем favoritesStore.toggleFavorite — он сам обновит локально и вызовет API
+    await favoritesStore.toggleFavorite(id, track.value); // Передаём полный объект трека для локального добавления (если нужно)
   } catch (error) {
     console.error("Error toggling favorite:", error);
     // Опционально: покажи пользователю ошибку (например, через toast или alert)
+    // Если 401, можно добавить редирект на логин, как в favorites.vue
   }
 };
 </script>
