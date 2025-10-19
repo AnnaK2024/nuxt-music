@@ -138,25 +138,24 @@ onMounted(() => {
   initPlayer(audioRef.value);
 });
 
-const handlePlay = async () => {
-  // Если трек не выбран — попробуем стартовать с первого в плейлисте
-  if (!playerStore.currentTrack) {
-    console.log("Попытка автозапуска, playlist:", playerStore.playlist);
-    const first = playerStore.playlist?.[0];
-    if (first) {
-      await playTrack(first); // playTrack может быть async
-      return;
-    } else {
-      console.warn("Плейлист пуст");
-      return;
-    }
-  }
 
-  // Если трек выбран — переключаем паузу / воспроизведение
-  if (playerStore.isPlaying) {
-    pause();
+const handlePlay = () => {
+  console.log("Текущий трек:", playerStore.currentTrack);
+  console.log("Плейлист:", playerStore.playlist);
+
+  if (!playerStore.currentTrack) {
+    if (playerStore.playlist.length > 0) {
+      playTrack(playerStore.playlist[0]);
+    } else {
+      console.log("Плейлист пуст");
+    }
   } else {
-    play();
+    if (playerStore.isPlaying) {
+      pause(); // ставим на паузу
+    } else {
+      // просто возобновляем воспроизведение без перезапуска трека
+      play();
+    }
   }
 };
 
