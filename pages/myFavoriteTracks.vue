@@ -10,48 +10,39 @@
         type="search"
         placeholder="Поиск"
         name="search"
-        @input="tracksStore.setFilters({ searchQuery })"
+        @input="favoritesStore.setFilters({ searchQuery })"
       />
     </div>
 
     <h2 class="centerblock__h2">Мои треки</h2>
-
-    <div v-if="favoriteTracks.length === 0" class="empty-state">
+    <FilterControls :store="favoritesStore" />
+    <div v-if="favoritesStore.favoriteTracks.length === 0" class="empty-state">
       <p class="no-tracks-message">Нет избранных треков</p>
     </div>
     <div v-else>
-      <PlaylistItem
-        v-for="track in favoriteTracks"
-        :key="track.id"
-        :track="track"
-      />
-      <FilterControls :store="favoritesStore" />
+      <PlayList :tracks="favoritesStore.favoriteTracks" />
     </div>
     <PlayerBar />
   </NuxtLayout>
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { onMounted } from "vue";
 import { useFavoritesStore } from "~/stores/favorites";
-import { useHead } from "#imports"
 
-// Устанавливаем заголовок страницы
-useHead({
-  title: "Мои треки", // Это установит title на "Избранное"
-});
-
+const searchQuery = ref("");
 const favoritesStore = useFavoritesStore();
 
-// Используем favorites напрямую из favoritesStore
-const favoriteTracks = computed(() => favoritesStore.favorites); // Изменили: теперь берём из favoritesStore.favorites
-
 onMounted(async () => {
+  console.log("Component mounted: Starting loadFavorites..."); 
   try {
-    await favoritesStore.loadFavorites(); // Изменили: теперь вызываем из favoritesStore
+    await favoritesStore.loadFavorites();
+    console.log(
+      "After load: favoriteTracks.length:",
+      favoritesStore.favoriteTracks.length
+    ); 
   } catch (error) {
     console.error("Ошибка загрузки:", error);
-    // Опционально: добавь уведомление пользователю, например, через toast
   }
 });
 </script>
@@ -140,6 +131,6 @@ onMounted(async () => {
   text-align: left;
   padding: 20px;
   color: #666;
-  font-size: 16px;
+  font-size: 35px;
 }
 </style>

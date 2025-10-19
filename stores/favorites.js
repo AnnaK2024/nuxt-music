@@ -10,13 +10,13 @@ export const useFavoritesStore = defineStore("favorites", () => {
   const errorMessage = ref(null);
   const { fetchWithAuth } = useAuth();
 
-  // Вспомогательные функции (дублируй из tracksStore, если нужно)
+  // Вспомогательные функции
   const normalizeId = (id) => {
     if (!id) return null;
     return id
       .toString()
       .trim()
-      .replace(/[^a-zA-Z0-9_-]/g, ""); // Удаляем спецсимволы, если нужно
+      .replace(/[^a-zA-Z0-9_-]/g, "");
   };
 
   const extractYearFromReleaseDate = (releaseDate) => {
@@ -30,12 +30,17 @@ export const useFavoritesStore = defineStore("favorites", () => {
     return genre.toString().trim().toLowerCase();
   };
 
-  // Computed getters
+  // Помощник — нормализовать трек и вернуть с валидным id
+  const normalizeTrack = (t, fallbackId = null, idx = 0) => {
+    const rawId = t?.id || t?._id || t?.trackId || fallbackId || `__generated_${idx}`;
+    const id = normalizeId(rawId) || `__generated_${idx}`;
+    return { ...t, id };
+  };
+
+  // Получаем boolean computed по id
   const isFavorite = (trackId) => {
     const id = normalizeId(trackId);
-    return computed(() =>
-      favorites.value.some((f) => normalizeId(f.id) === id)
-    );
+    return computed(() => favorites.value.some((f) => normalizeId(f.id) === id));
   };
 
   const availableAuthors = computed(() => {
@@ -62,7 +67,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
     yearsArray.sort((a, b) => {
       if (a === "Неизвестно") return 1;
       if (b === "Неизвестно") return -1;
-      return b.localeCompare(a); // По убыванию
+      return b.localeCompare(a);
     });
     return yearsArray;
   });
@@ -86,19 +91,33 @@ export const useFavoritesStore = defineStore("favorites", () => {
     return genresArray;
   });
 
+  const favoriteTracks = computed(() => {
+    console.log('Store computed favoriteTracks:', favorites.value.length, favorites.value);  // <-- Лог для отладки (можно убрать после фикса)
+    return favorites.value;  // Пока просто возвращает favorites; позже добавь фильтры, если нужно
+  });
+
+  // Нормализовать массив ответа и вернуть массив треков
+  const normalizeResponseToArray = (resp) => {
+    if (!resp) return [];
+    if (Array.isArray(resp)) return resp;
+    if (Array.isArray(resp?.data)) return resp.data;
+    // Если пришёл объект с полем data — возвращаем либо data, либо сам объект как элемент массива
+    if (resp?.data && !Array.isArray(resp.data)) return [resp.data];
+    // Если это одиночный трек — поместим его в массив
+    return [resp];
+  };
+
   // Загрузка избранного с сервера
   async function loadFavorites() {
+    console.log('Loading favorites...'); 
     if (isLoading.value) return;
     isLoading.value = true;
     errorMessage.value = null;
 
     try {
-      const response = await fetchWithAuth(
-        `${API_URL}/catalog/track/favorite/all/`,
-        {
-          method: "GET",
-        }
-      );
+      const response = await fetchWithAuth(`${API_URL}/catalog/track/favorite/all/`, {
+        method: "GET",
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -112,15 +131,11 @@ export const useFavoritesStore = defineStore("favorites", () => {
       }
 
       const data = await response.json();
-      favorites.value = Array.isArray(data?.data) ? data.data : data;
-      // Нормализуем ID, если нужно
-      favorites.value = favorites.value.map((t, i) => ({
-        ...t,
-        id: normalizeId(t.id) || t._id || t.trackId || `__generated_${i}`,
-      }));
+      console.log('HTTP', response.status, response.ok, 'response JSON:', data);
+      const arr = normalizeResponseToArray(data);
+      console.log('Загружено треков:', arr.length);
+      favorites.value = arr.map((t, i) => normalizeTrack(t, null, i));
 
-
-      console.log("Избранные треки загружены:", favorites.value);
       return favorites.value;
     } catch (error) {
       console.error("Ошибка при получении избранного:", error);
@@ -141,34 +156,54 @@ export const useFavoritesStore = defineStore("favorites", () => {
     }
 
     try {
-      const response = await fetchWithAuth(
-        `${API_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetchWithAuth(`${API_URL}/catalog/track/${id}/favorite/`, {
+        method: "POST",
+      });
 
       if (!response.ok) {
         const error = new Error(`HTTP error! Status: ${response.status}`);
         errorMessage.value = error.message;
         throw error;
       }
+
       const data = await response.json();
       console.log(`Трек ${id} добавлен в избранное:`, data);
 
-      // Локально добавляем трек, если передан trackData (из tracksStore)
-      if (trackData && !favorites.value.some((f) => normalizeId(f.id) === id)) {
-        favorites.value.push({ ...trackData, id });
+      // Если передали trackData — обработаем его безопасно
+      if (trackData) {
+        // Если передали массив треков — добавим поэлементно
+        if (Array.isArray(trackData)) {
+          trackData.forEach((t, i) => {
+            const normalized = normalizeTrack(t, id, i);
+            const exists = favorites.value.some((f) => normalizeId(f.id) === normalizeId(normalized.id));
+            if (!exists) favorites.value.push(normalized);
+          });
+        } else if (typeof trackData === "object") {
+          const normalized = normalizeTrack(trackData, id, 0);
+          const exists = favorites.value.some((f) => normalizeId(f.id) === normalizeId(normalized.id));
+          if (!exists) favorites.value.push(normalized);
+        } else {
+          // Неподдерживаемый тип trackData — игнорируем и попытаемся использовать ответ сервера
+          console.warn("addFavorite: unsupported trackData type", typeof trackData);
+        }
       } else {
-        // Если нет trackData, перезагружаем (опционально, для свежести)
-        await loadFavorites();
+        // Если trackData не передан — используем ответ сервера
+        const respArr = normalizeResponseToArray(data);
+        // Если сервер вернул весь список — заменим локально (без дубликатов)
+        if (Array.isArray(respArr) && respArr.length > 1) {
+          favorites.value = respArr.map((t, i) => normalizeTrack(t, null, i));
+        } else if (respArr.length === 1) {
+          const normalized = normalizeTrack(respArr[0], id, 0);
+          const exists = favorites.value.some((f) => normalizeId(f.id) === normalizeId(normalized.id));
+          if (!exists) favorites.value.push(normalized);
+        }
       }
+
       errorMessage.value = null;
       return data;
     } catch (error) {
       console.error("Ошибка при добавлении в избранное:", error);
-      errorMessage.value =
-        error?.message || "Ошибка при добавлении в избранное";
+      errorMessage.value = error?.message || "Ошибка при добавлении в избранное";
       throw error;
     }
   }
@@ -183,12 +218,9 @@ export const useFavoritesStore = defineStore("favorites", () => {
     }
 
     try {
-      const response = await fetchWithAuth(
-        `${API_URL}/catalog/track/${id}/favorite/`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetchWithAuth(`${API_URL}/catalog/track/${id}/favorite/`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const error = new Error(`HTTP error! Status: ${response.status}`);
@@ -204,22 +236,23 @@ export const useFavoritesStore = defineStore("favorites", () => {
       return data;
     } catch (error) {
       console.error("Ошибка при удалении из избранного:", error);
-      errorMessage.value =
-        error?.message || "Ошибка при удалении из избранного";
+      errorMessage.value = error?.message || "Ошибка при удалении из избранного";
       throw error;
     }
   }
 
   // Toggle: добавляет или удаляет на основе текущего состояния
   async function toggleFavorite(trackId, trackData = null) {
-    if (isFavorite(trackId).value) {
-      return await removeFavorite(trackId);
+    const id = normalizeId(trackId);
+    if (!id) throw new Error("Invalid track id in toggleFavorite");
+
+    if (isFavorite(id).value) {
+      return await removeFavorite(id);
     } else {
-      return await addFavorite(trackId, trackData);
+      return await addFavorite(id, trackData);
     }
   }
 
-  // Очистка ошибки (для UI)
   function clearError() {
     errorMessage.value = null;
   }
@@ -232,6 +265,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
     availableAuthors,
     availableYears,
     availableGenres,
+    favoriteTracks,
     loadFavorites,
     addFavorite,
     removeFavorite,

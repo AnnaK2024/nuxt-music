@@ -84,12 +84,11 @@ const handleLike = async () => {
   console.log("track.id:", id, "type:", typeof id); // Лог для отладки
 
   try {
-    // Используем favoritesStore.toggleFavorite — он сам обновит локально и вызовет API
-    await favoritesStore.toggleFavorite(id, track.value); // Передаём полный объект трека для локального добавления (если нужно)
+    
+    await favoritesStore.toggleFavorite(id, track.value); 
   } catch (error) {
     console.error("Error toggling favorite:", error);
-    // Опционально: покажи пользователю ошибку (например, через toast или alert)
-    // Если 401, можно добавить редирект на логин, как в favorites.vue
+    
   }
 };
 </script>

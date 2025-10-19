@@ -125,8 +125,7 @@ export function useAudioPlayer() {
 
   watch(
     () => playerStore.currentTrack,
-    (newTrack, oldTrack) => {
-      console.log("currentTrack изменился:", oldTrack, "->", newTrack);
+    (newTrack) => {
       if (newTrack) {
         playTrack(newTrack);
         currentTrack.value = newTrack;

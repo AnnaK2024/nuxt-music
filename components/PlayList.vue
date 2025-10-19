@@ -25,17 +25,33 @@
     </div>
 
     <div v-else class="content__playlist playlist">
-      <TrackItem v-for="track in tracksStore.filteredTracks" :key="track.id" :track="track"/>
+      <TrackItem v-for="track in localTracks" :key="track.id" :track="track" />
     </div>
   </div>
 </template>
 
 <script setup>
-const {loading, error} = useTracks();
+import { computed, onMounted } from "vue";
+import TrackItem from "~/components/TrackItem.vue";
+import { useTracksStore } from "~/stores/tracks";
+import { useTracks } from "~/composables/useTracks"; // если у вас есть композиция для загрузки/состояния
+
+const props = defineProps({
+  tracks: { type: Array, default: null },
+});
+
+// локальный стор (если нужен для загрузки/фильтрации)
 const tracksStore = useTracksStore();
+const { loading, error } = useTracks();
+
+// Если проп tracks передали — используем его; иначе — используем tracksStore.filteredTracks
+const localTracks = computed(() => props.tracks ?? tracksStore.filteredTracks);
 
 onMounted(() => {
-  tracksStore.loadTracks();
+  // Загружаем все треки только если не передали props.tracks
+  if (!props.tracks) {
+    tracksStore.loadTracks();
+  }
 });
 </script>
 
@@ -153,7 +169,8 @@ onMounted(() => {
 }
 
 @keyframes blink {
-  0%, 20% {
+  0%,
+  20% {
     opacity: 0;
   }
   50% {
@@ -163,5 +180,4 @@ onMounted(() => {
     opacity: 0;
   }
 }
-
 </style>

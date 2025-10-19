@@ -28,13 +28,10 @@ const favoritesStore = useFavoritesStore();
 
 onMounted(async () => {
   try {
-    // Запускаем параллельно, если не зависят друг от друга (быстрее)
     await Promise.all([
       tracksStore.loadTracks(),
       favoritesStore.loadFavorites(),
     ]);
-
-    console.log("Треки и избранные загружены и синхронизированы");
   } catch (error) {
     console.error("Ошибка загрузки данных:", error);
     if (error.response?.status === 401) {

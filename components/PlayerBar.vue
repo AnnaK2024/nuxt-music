@@ -76,11 +76,6 @@
                   <use xlink:href="/icons/sprite.svg#icon-like" />
                 </svg>
               </div>
-              <div class="track-play__dislike _btn-icon">
-                <svg class="track-play__dislike-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-dislike" />
-                </svg>
-              </div>
             </div>
           </div>
         </div>
@@ -143,20 +138,25 @@ onMounted(() => {
   initPlayer(audioRef.value);
 });
 
-const handlePlay = () => {
+const handlePlay = async () => {
+  // Если трек не выбран — попробуем стартовать с первого в плейлисте
   if (!playerStore.currentTrack) {
-    if (playerStore.playlist.length > 0) {
-      playTrack(playerStore.playlist[0]);
+    console.log("Попытка автозапуска, playlist:", playerStore.playlist);
+    const first = playerStore.playlist?.[0];
+    if (first) {
+      await playTrack(first); // playTrack может быть async
+      return;
     } else {
-      console.log("Плейлист пуст");
+      console.warn("Плейлист пуст");
+      return;
     }
+  }
+
+  // Если трек выбран — переключаем паузу / воспроизведение
+  if (playerStore.isPlaying) {
+    pause();
   } else {
-    if (playerStore.isPlaying) {
-      pause(); // ставим на паузу
-    } else {
-      // просто возобновляем воспроизведение без перезапуска трека
-      play();
-    }
+    play();
   }
 };
 
