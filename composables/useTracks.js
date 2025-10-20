@@ -19,7 +19,9 @@ export const useTracks = () => {
 
   const fetchTracks = async () => {
     loading.value = true;
-    error.value = null;
+    if (error.value) {
+      console.error("Ошибка загрузки треков:", error.value);
+    }
     try {
       const response = await fetch(`${API_URL}/catalog/track/all/`);
       console.log("Ответ API:", response);

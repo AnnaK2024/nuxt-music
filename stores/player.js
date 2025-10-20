@@ -11,13 +11,13 @@ export const usePlayerStore = defineStore("player", {
     audioRef: null,
     isRepeat: false,
     isShuffle: false,
-    isRepeatPlaylist: false, // Новый флаг для повторения плейлиста
+    isRepeatPlaylist: false, 
   }),
 
   getters: {
     hasNext(state) {
       if (!state.playlist.length) return false;
-      if (state.isShuffle || state.isRepeatPlaylist) return true; // Для shuffle и цикла всегда true
+      if (state.isShuffle || state.isRepeatPlaylist) return true; 
       const currentIndex = state.playlist.findIndex(
         (t) => t.id === state.currentTrack?.id
       );

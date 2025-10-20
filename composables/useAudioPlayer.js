@@ -19,13 +19,26 @@ export function useAudioPlayer() {
   };
 
   const playTrack = (track) => {
-    if (!track.track_file) {
+    if (!track || !track.track_file) {
       playerStore.setPlaying(false);
       return;
     }
 
     if (!playerStore.audioRef) {
       playerStore.setPlaying(false);
+      return;
+    }
+
+    if (playerStore.audioRef.src === track.track_file) {
+      playerStore.audioRef
+        .play()
+        .then(() => {
+          playerStore.setPlaying(true);
+        })
+        .catch((e) => {
+          console.error("Ошибка воспроизведения:", e);
+          playerStore.setPlaying(false);
+        });
       return;
     }
 
@@ -118,6 +131,7 @@ export function useAudioPlayer() {
       playTrack(playerStore.currentTrack);
     } else if (playerStore.hasNext) {
       playerStore.playNext();
+      playTrack(playerStore.currentTrack);
     } else {
       playerStore.setPlaying(false);
     }
@@ -127,7 +141,6 @@ export function useAudioPlayer() {
     () => playerStore.currentTrack,
     (newTrack) => {
       if (newTrack) {
-        playTrack(newTrack);
         currentTrack.value = newTrack;
       }
     }
@@ -140,11 +153,19 @@ export function useAudioPlayer() {
   });
 
   const playNext = () => {
+    const wasPlaying = playerStore.isPlaying;
     playerStore.playNext();
+    if (wasPlaying) {
+      playTrack(playerStore.currentTrack);
+    }
   };
 
   const playPrev = () => {
+    const wasPlaying = playerStore.isPlaying;
     playerStore.playPrev();
+    if (wasPlaying) {
+      playTrack(playerStore.currentTrack);
+    }
   };
 
   const toggleRepeat = () => {

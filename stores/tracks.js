@@ -1,23 +1,8 @@
 import { defineStore } from "pinia";
-import { useFavoritesStore } from "~/stores/favorites";
-
-export function normalizeId(id) {
-  if (id === null || id === undefined) return null;
-  const s = String(id).trim();
-  return s === "" ? null : s;
-}
-
-function extractYearFromReleaseDate(releaseDate) {
-  if (!releaseDate) return "Неизвестно";
-  const raw = String(releaseDate).split("<")[0].trim();
-  const match = raw.match(/\d{4}/);
-  return match ? match[0] : raw || "Неизвестно";
-}
-
-function normalizeGenreName(genre) {
-  if (!genre) return "неизвестно";
-  return String(genre).toLowerCase().trim();
-}
+import {
+  extractYearFromReleaseDate,
+  normalizeGenreName,
+} from "~/utils/trackUtils";
 
 export const useTracksStore = defineStore("tracks", {
   state: () => ({
@@ -30,7 +15,6 @@ export const useTracksStore = defineStore("tracks", {
       year: null,
       genre: null,
       searchQuery: "",
-      onlyFavorites: false,
     },
   }),
 
@@ -87,13 +71,10 @@ export const useTracksStore = defineStore("tracks", {
     },
 
     filteredTracks(state) {
-      const favoritesStore = useFavoritesStore(); // Используем для избранных
       const query = state.filters.searchQuery.trim().toLowerCase();
 
-      // Если "только избранные", фильтруем favoritesStore.favorites, иначе state.tracks
-      let filteredList = state.filters.onlyFavorites
-        ? favoritesStore.favorites
-        : state.tracks;
+      // Всегда начинаем с полного списка треков
+      let filteredList = state.tracks;
 
       // Фильтр по поисковому запросу
       if (query) {
@@ -141,14 +122,6 @@ export const useTracksStore = defineStore("tracks", {
         });
       }
 
-      // Фильтр по избранным
-      // if (state.filters.onlyFavorites) {
-      //   filteredList = filteredList.filter((track) => {
-      //     const id = normalizeId(track?.id);
-      //     return id ? favoriteIdsSet.has(id) : false;
-      //   });
-      // }
-
       return filteredList;
     },
 
@@ -158,7 +131,6 @@ export const useTracksStore = defineStore("tracks", {
         filters.author ||
           filters.year ||
           filters.genre ||
-          filters.onlyFavorites ||
           (filters.searchQuery && filters.searchQuery.trim())
       );
     },
@@ -203,59 +175,18 @@ export const useTracksStore = defineStore("tracks", {
       }
     },
 
-    // async loadFavorites() {
-    //   if (this.isLoading) return;
-    //   this.isLoading = true;
-    //   this.errorMessage = null;
-
-    //   try {
-    //     const token = localStorage.getItem("access_token"); // Предполагаю, что токен здесь; замените на ваш способ хранения
-    //     if (!token) throw new Error("Токен авторизации отсутствует");
-
-    //     const response = await fetch(
-    //       "https://webdev-music-003b5b991590.herokuapp.com/catalog/track/favorite/all/",
-    //       {
-    //         headers: {
-    //           Authorization: `Bearer ${token}`, // Добавлено для авторизации
-    //         },
-    //       }
-    //     );
-    //     if (!response.ok) {
-    //       // Добавил более детальную обработку для отладки
-    //       const errorText = await response.text();
-    //       console.error("Ответ сервера:", response.status, errorText);
-    //       throw new Error(
-    //         `Не удалось получить избранные треки (статус: ${response.status})`
-    //       );
-    //     }
-    //     const json = await response.json();
-    //     const tracks = Array.isArray(json?.data) ? json.data : [];
-
-    //     // Нормализуем ID, как в loadTracks
-    //     this.favoriteTracks = tracks.map((t, i) => {
-    //       const chosen = t.id ?? t._id ?? t.trackId ?? `__generated_${i}`;
-    //       return { ...t, id: chosen };
-    //     });
-
-    //     // Синхронизируем favoriteTrackIds для совместимости с фильтрами
-    //     this.favoriteTrackIds = this.favoriteTracks.map((track) =>
-    //       normalizeId(track.id)
-    //     );
-    //   } catch (error) {
-    //     console.error("Ошибка при загрузке избранных треков:", error);
-    //     this.errorMessage =
-    //       error?.message || "Ошибка при загрузке избранных треков";
-    //   } finally {
-    //     this.isLoading = false;
-    //   }
-    // },
-
     setFilters(patch) {
       // Создаем копию текущих фильтров
       const newFilters = { ...this.filters, ...patch };
 
-      // Логика сброса: при установке одного из основных фильтров (author, year, genre) сбрасываем остальные,
-      // но оставляем searchQuery и onlyFavorites без изменений, если они не в patch
+      if (
+        patch.author !== undefined ||
+        patch.year !== undefined ||
+        patch.genre !== undefined
+      ) {
+        newFilters.searchQuery = "";
+      }
+
       if (patch.author !== undefined) {
         newFilters.year = null;
         newFilters.genre = null;
@@ -268,7 +199,6 @@ export const useTracksStore = defineStore("tracks", {
         newFilters.author = null;
         newFilters.year = null;
       }
-      // searchQuery и onlyFavorites не сбрасывают другие фильтры и не сбрасываются сами
 
       this.filters = newFilters;
     },
@@ -279,51 +209,7 @@ export const useTracksStore = defineStore("tracks", {
         year: null,
         genre: null,
         searchQuery: "",
-        onlyFavorites: false,
       };
-    },
-
-    // async toggleFavorite(trackId) {
-    //   const token = localStorage.getItem("access_token");
-    //   if (!token) {
-    //     console.error("Токен авторизации отсутствует");
-    //     this.errorMessage = "Токен авторизации отсутствует. Войдите заново.";
-    //     return;
-    //   }
-
-    //   const isFavorite = this.favoriteTrackIds.includes(normalizeId(trackId));
-    //   const method = isFavorite ? "DELETE" : "POST";
-    //   const url = `https://webdev-music-003b5b991590.herokuapp.com/catalog/track/${trackId}/favorite/`;
-
-    //   try {
-    //     const response = await fetch(url, {
-    //       method,
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //     });
-    //     if (!response.ok) throw new Error("Не удалось обновить избранное");
-
-    //     // Обновляем favoriteTrackIds локально
-    //     if (isFavorite) {
-    //       this.favoriteTrackIds = this.favoriteTrackIds.filter(
-    //         (id) => id !== normalizeId(trackId)
-    //       );
-    //     } else {
-    //       this.favoriteTrackIds.push(normalizeId(trackId));
-    //     }
-
-    //     // Опционально: Перезагрузите favoriteTracks после изменения (для синхронизации)
-    //     await this.loadFavorites();
-    //   } catch (error) {
-    //     console.error("Ошибка при toggleFavorite:", error);
-    //     this.errorMessage =
-    //       error?.message || "Ошибка при обновлении избранного";
-    //   }
-    // },
-
-    setOnlyFavorites(value) {
-      this.filters.onlyFavorites = Boolean(value);
     },
   },
 });

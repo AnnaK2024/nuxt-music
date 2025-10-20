@@ -71,7 +71,11 @@
               </div>
             </div>
             <div class="track-play__like-dis">
-              <div class="track-play__like _btn-icon">
+              <div
+                class="track-play__like _btn-icon"
+                :class="{ active: isLiked }"
+                @click="handleLike"
+              >
                 <svg class="track-play__like-svg">
                   <use xlink:href="/icons/sprite.svg#icon-like" />
                 </svg>
@@ -110,18 +114,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { usePlayerStore } from "~/stores/player";
+import { useTracksStore } from "~/stores/tracks";
+import { useFavoritesStore } from "~/stores/favorites";
 import { useAudioPlayer } from "~/composables/useAudioPlayer";
 
 const playerStore = usePlayerStore();
+const tracksStore = useTracksStore();
+const favoritesStore = useFavoritesStore();
 const audioRef = ref(null);
 
 const {
   initPlayer,
   playTrack,
   pause,
-  play,
   seekTo,
   updateVolume,
   handleTimeUpdate,
@@ -134,27 +141,66 @@ const {
   duration,
 } = useAudioPlayer();
 
-onMounted(() => {
+onMounted(async () => {
   initPlayer(audioRef.value);
+
+  await tracksStore.loadTracks();
+  await favoritesStore.loadFavorites();
+
+  playerStore.setPlaylist(tracksStore.filteredTracks);
 });
 
+watch(
+  () => tracksStore.filteredTracks, // Реактивно следим за изменениями в store
+  (newTracks) => {
+    playerStore.setPlaylist(newTracks);
+    // Опционально: сбросить текущий трек, если он не в новом плейлисте
+    if (!newTracks.includes(playerStore.currentTrack)) {
+      playerStore.setCurrentTrack(newTracks[0] || null);
+    }
+  }
+);
+
+// <-- НОВОЕ: Computed-свойство для проверки, лайкнут ли текущий трек
+const isLiked = computed(() => {
+  if (!playerStore.currentTrack) return false; // Если трека нет, лайк невозможен
+  return favoritesStore.isFavorite(playerStore.currentTrack.id).value; // Используем метод из store
+});
+
+// <-- НОВОЕ: Обработчик клика на сердечке
+const handleLike = async () => {
+  if (!playerStore.currentTrack) {
+    console.warn("Нет текущего трека для лайка");
+    return;
+  }
+
+  try {
+    // Переключаем статус (добавляем или удаляем из избранного)
+    await favoritesStore.toggleFavorite(
+      playerStore.currentTrack.id,
+      playerStore.currentTrack
+    );
+    // После toggle, isLiked автоматически обновится благодаря реактивности
+  } catch (error) {
+    console.error("Ошибка при переключении лайка:", error);
+    // Здесь можно добавить уведомление пользователю, например, через toast или alert
+  }
+};
 
 const handlePlay = () => {
-  console.log("Текущий трек:", playerStore.currentTrack);
-  console.log("Плейлист:", playerStore.playlist);
-
-  if (!playerStore.currentTrack) {
-    if (playerStore.playlist.length > 0) {
-      playTrack(playerStore.playlist[0]);
-    } else {
-      console.log("Плейлист пуст");
-    }
+  if (playerStore.isPlaying) {
+    pause(); // Если играет, ставим на паузу
   } else {
-    if (playerStore.isPlaying) {
-      pause(); // ставим на паузу
+    if (!playerStore.currentTrack) {
+      // Если текущего трека нет, устанавливаем первый и играем
+      if (tracksStore.filteredTracks.length > 0) {
+        // Используем store напрямую
+        playerStore.setCurrentTrack(tracksStore.filteredTracks[0]);
+        playTrack(playerStore.currentTrack);
+      }
     } else {
-      // просто возобновляем воспроизведение без перезапуска трека
-      play();
+      // Если трек уже выбран, просто играем его
+      playTrack(playerStore.currentTrack);
     }
   }
 };
@@ -369,6 +415,12 @@ const handleShuffleToggle = () => {
   stroke: #696969;
 }
 
+.player__btn-repeat.active .player__btn-repeat-svg,
+.player__btn-shuffle.active .player__btn-shuffle-svg {
+  fill: white !important;
+  color: white !important;
+}
+
 .player__track-play {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -473,6 +525,10 @@ const handleShuffleToggle = () => {
   height: 12px;
   fill: transparent;
   stroke: #696969;
+}
+
+.track-play__like.active .track-play__like-svg {
+  fill: #ad61ff; 
 }
 
 .track-play__dislike {

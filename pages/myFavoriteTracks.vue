@@ -34,13 +34,8 @@ const searchQuery = ref("");
 const favoritesStore = useFavoritesStore();
 
 onMounted(async () => {
-  console.log("Component mounted: Starting loadFavorites..."); 
   try {
     await favoritesStore.loadFavorites();
-    console.log(
-      "After load: favoriteTracks.length:",
-      favoritesStore.favoriteTracks.length
-    ); 
   } catch (error) {
     console.error("Ошибка загрузки:", error);
   }
