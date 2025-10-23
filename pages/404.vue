@@ -4,7 +4,7 @@
       <main class="main">
         <nav class="main__nav nav">
           <div class="nav__logo logo">
-            <img class="logo__image" src="/img/logo.png" />
+            <NuxtImg class="logo__image" src="/img/logo.png" />
           </div>
           <div class="nav__burger burger">
             <span class="burger__line" />
@@ -28,7 +28,7 @@
             <h1>404</h1>
             <p class="title">
               Страница не найдена
-              <img class="logo__image" src="/img/smile_crying.png" />
+              <NuxtImg class="logo__image" src="/img/smile_crying.png" />
             </p>
             <p class="subtitle">
               Возможно, она была удалена<br />или перенесена на другой адрес
