@@ -2,21 +2,28 @@
   <div class="wrapper">
     <div class="container">
       <div class="main">
-        <NavBar />
+        <NavBar v-if="showMain" />
         <div class="main__centerblock">
           <slot />
         </div>
-        <SideBar />
+        <SideBar v-if="showMain" />
       </div>
-      <PlayerBar />
+      <PlayerBar v-if="showMain" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import NavBar from "~/components/NavBar.vue";
 import PlayerBar from "~/components/PlayerBar.vue";
 import SideBar from "~/components/SideBar.vue";
+
+const route = useRoute()
+
+const hiddenPaths = ['/login', '/signup']
+
+const showMain = computed(() => !hiddenPaths.includes(route.path))
 
 useHead({
   title: "Моя музыка | Skypro.Music",

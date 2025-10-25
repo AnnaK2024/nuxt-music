@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout name="default">
+  <div>
     <div class="centerblock__search search">
       <svg class="search__svg">
         <use xlink:href="/icons/sprite.svg#icon-search" />
@@ -15,7 +15,7 @@
     <h2 class="centerblock__h2">Треки</h2>
     <FilterControls />
     <PlayList />
-  </NuxtLayout>
+  </div>
 </template>
 
 <script setup>

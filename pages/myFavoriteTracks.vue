@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout name="default">
+  <div>
     <div class="centerblock__search search">
       <svg class="search__svg">
         <use xlink:href="/icons/sprite.svg#icon-search" />
@@ -23,7 +23,7 @@
       <PlayList :tracks="favoritesStore.favoriteTracks" />
     </div>
     <PlayerBar />
-  </NuxtLayout>
+  </div>
 </template>
 
 <script setup>

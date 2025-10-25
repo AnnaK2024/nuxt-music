@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/eslint", "@pinia/nuxt", "@nuxt/image"],
+  modules: ["@nuxt/eslint", "@nuxt/test-utils", "@pinia/nuxt", "@nuxt/image"],
   css: ["assets/main.css"],
   app: {
     head: {

@@ -31,7 +31,7 @@
               <NuxtImg class="logo__image" src="/img/smile_crying.png" />
             </p>
             <p class="subtitle">
-              Возможно, она была удалена<br />или перенесена на другой адрес
+              Возможно, она была удалена или перенесена на другой адрес
             </p>
             <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink>
           </section>
