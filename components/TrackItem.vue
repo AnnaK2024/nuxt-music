@@ -40,19 +40,20 @@
 <script setup>
 import { toRef, computed } from "vue";
 import { useFavoritesStore } from "~/stores/favorites";
-import { useAudioPlayer } from "~/composables/useAudioPlayer";
+import { usePlayerStore } from "~/stores/player";
 
 const props = defineProps({
-  track: {
-    type: Object,
-    required: true,
-  },
+  track: { type: Object, required: true },
+  index: { type: Number, required: true },
+  pageTracks: { type: Array, required: true },
 });
 
 const track = toRef(props, "track");
+const index = toRef(props, "index");
+const pageTracks = toRef(props, "pageTracks");
 
-const { playTrack, currentTrack } = useAudioPlayer();
 const favoritesStore = useFavoritesStore();
+const playerStore = usePlayerStore();
 
 // Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
@@ -65,30 +66,31 @@ const isLiked = computed(() => {
 const isCurrentTrack = computed(
   () =>
     !!(
-      currentTrack.value &&
-      String(currentTrack.value.id) === String(track.value.id)
+      playerStore.currentTrack &&
+      String(playerStore.currentTrack.id) === String(track.value.id)
     )
 );
 
 const handleClick = () => {
-  playTrack(track.value);
+  // Устанавливаем весь массив страницы как плейлист и ставим текущий индекс
+  if (pageTracks.value && pageTracks.value.length) {
+    playerStore.setPlaylist(pageTracks.value, index.value);
+    playerStore.play();
+    return;
+  }
+
+  // fallback — проиграть один трек
+  playerStore.setPlaylist([track.value], 0);
+  playerStore.play();
 };
 
 const handleLike = async () => {
   const id = track.value.id;
-  if (!id) {
-    console.warn("Invalid track ID, cannot toggle favorite");
-    return;
-  }
-
-  console.log("track.id:", id, "type:", typeof id); // Лог для отладки
-
+  if (!id) return;
   try {
-    
-    await favoritesStore.toggleFavorite(id, track.value); 
-  } catch (error) {
-    console.error("Error toggling favorite:", error);
-    
+    await favoritesStore.toggleFavorite(id, track.value);
+  } catch (err) {
+    console.error("Ошибка при лайке:", err);
   }
 };
 </script>

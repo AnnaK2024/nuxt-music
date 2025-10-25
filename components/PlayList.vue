@@ -25,7 +25,13 @@
     </div>
 
     <div v-else class="content__playlist playlist">
-      <TrackItem v-for="track in localTracks" :key="track.id" :track="track" />
+      <TrackItem
+        v-for="(track, index) in localTracks"
+        :key="track.id"
+        :track="track"
+        :index="index"
+        :page-tracks="localTracks"
+      />
     </div>
   </div>
 </template>
@@ -50,7 +56,9 @@ const localTracks = computed(() => props.tracks ?? tracksStore.filteredTracks);
 onMounted(() => {
   // Загружаем все треки только если не передали props.tracks
   if (!props.tracks) {
+    
     tracksStore.loadTracks();
+    
   }
 });
 </script>

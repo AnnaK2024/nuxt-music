@@ -22,7 +22,6 @@
     <div v-else>
       <PlayList :tracks="favoritesStore.favoriteTracks" />
     </div>
-    <PlayerBar />
   </div>
 </template>
 

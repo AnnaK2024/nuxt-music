@@ -98,68 +98,29 @@
                 name="range"
                 min="0"
                 max="100"
-                @input="updateVolume"
+                @input="onVolumeInput"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <audio
-      ref="audioRef"
-      @timeupdate="handleTimeUpdate"
-      @ended="handleTrackEnd"
-    />
+    <audio ref="audioRef" @timeupdate="onTimeUpdate" @ended="onTrackEnd" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { usePlayerStore } from "~/stores/player";
-import { useTracksStore } from "~/stores/tracks";
 import { useFavoritesStore } from "~/stores/favorites";
-import { useAudioPlayer } from "~/composables/useAudioPlayer";
 
 const playerStore = usePlayerStore();
-const tracksStore = useTracksStore();
 const favoritesStore = useFavoritesStore();
 const audioRef = ref(null);
 
-const {
-  initPlayer,
-  playTrack,
-  pause,
-  seekTo,
-  updateVolume,
-  handleTimeUpdate,
-  handleTrackEnd,
-  playNext,
-  playPrev,
-  toggleRepeat,
-  toggleShuffle,
-  currentTime,
-  duration,
-} = useAudioPlayer();
-
 onMounted(async () => {
-  initPlayer(audioRef.value);
-
-  await tracksStore.loadTracks();
-  await favoritesStore.loadFavorites();
-
-  playerStore.setPlaylist(tracksStore.filteredTracks);
+  playerStore.initAudio(audioRef.value);
 });
-
-watch(
-  () => tracksStore.filteredTracks, // Реактивно следим за изменениями в store
-  (newTracks) => {
-    playerStore.setPlaylist(newTracks);
-    // Опционально: сбросить текущий трек, если он не в новом плейлисте
-    if (!newTracks.includes(playerStore.currentTrack)) {
-      playerStore.setCurrentTrack(newTracks[0] || null);
-    }
-  }
-);
 
 // <-- НОВОЕ: Computed-свойство для проверки, лайкнут ли текущий трек
 const isLiked = computed(() => {
@@ -189,48 +150,65 @@ const handleLike = async () => {
 
 const handlePlay = () => {
   if (playerStore.isPlaying) {
-    pause(); // Если играет, ставим на паузу
+    playerStore.pause(); // Если играет, ставим на паузу
   } else {
-    if (!playerStore.currentTrack) {
-      // Если текущего трека нет, устанавливаем первый и играем
-      if (tracksStore.filteredTracks.length > 0) {
-        // Используем store напрямую
-        playerStore.setCurrentTrack(tracksStore.filteredTracks[0]);
-        playTrack(playerStore.currentTrack);
-      }
-    } else {
-      // Если трек уже выбран, просто играем его
-      playTrack(playerStore.currentTrack);
+    // если нет currentTrack, ничего не делаем — трек должен быть установлен при клике на TrackItem
+    if (!playerStore.currentTrack && playerStore.playlist.length) {
+      playerStore.setCurrentTrackByIndex(0);
     }
+    playerStore.play();
   }
 };
 
+const handleNext = () => playerStore.playNext();
+const handlePrev = () => playerStore.playPrev();
+const handleRepeatToggle = () => playerStore.toggleRepeat();
+const handleShuffleToggle = () => playerStore.toggleShuffle();
+
+const onVolumeInput = () => {
+  // v-model уже обновляет playerStore.volume, но для безопасности вызываем сеттер
+  playerStore.setVolume(Number(playerStore.volume));
+};
+
+// progress click — высчитываем процент и делаем seek
 const handleProgressClick = (event) => {
-  const progressBar = event.currentTarget;
-  const clickPosition = event.offsetX;
-  const progressBarWidth = progressBar.offsetWidth;
-  const percentage = (clickPosition / progressBarWidth) * 100;
-  seekTo(percentage);
+  const bar = event.currentTarget;
+  const rect = bar.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const pct = (clickX / rect.width) * 100;
+  playerStore.seekToPercent(pct);
 };
 
-const formattedCurrentTime = computed(() => formatTime(currentTime.value));
-const formattedDuration = computed(() => formatTime(duration.value));
-
-const handleNext = () => {
-  playNext();
+// События audio — мы уже слушаем в сторе, но если composable не делает этого, синхронизируем:
+const onTimeUpdate = () => {
+  // playerStore обновляет progress через слушатель внутри initAudio; тут можно оставить пусто
+};
+const onTrackEnd = () => {
+  // тоже можно оставить пусто — лог handled в сторе
 };
 
-const handlePrev = () => {
-  playPrev();
-};
+const formattedCurrentTime = computed(() => {
+  const sec = playerStore.currentTime || 0;
+  const m = Math.floor(sec / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = Math.floor(sec % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${m}:${s}`;
+});
+const formattedDuration = computed(() => {
+  const sec = playerStore.duration || 0;
+  const m = Math.floor(sec / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = Math.floor(sec % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${m}:${s}`;
+});
 
-const handleRepeatToggle = () => {
-  toggleRepeat();
-};
 
-const handleShuffleToggle = () => {
-  toggleShuffle();
-};
 </script>
 
 <style lang="scss" scoped>
@@ -528,7 +506,7 @@ const handleShuffleToggle = () => {
 }
 
 .track-play__like.active .track-play__like-svg {
-  fill: #ad61ff; 
+  fill: #ad61ff;
 }
 
 .track-play__dislike {
