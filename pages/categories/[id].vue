@@ -22,9 +22,11 @@
           Нет треков, соответствующих выбранным фильтрам.
         </div>
         <TrackItem
-          v-for="track in filteredTracks"
+          v-for="(track, index) in filteredTracks"
           :key="track.id"
           :track="track"
+          :index="index"
+          :playlist="filteredTracks"
         />
       </div>
     </div>
@@ -38,10 +40,12 @@ import { useHead } from "#imports";
 import TrackItem from "~/components/TrackItem.vue";
 import { useCategoryTracks } from "~/composables/useCategoryTracks";
 import { useTracksStore } from "~/stores/tracks";
+import { usePlayerStore } from "~/stores/player";
 import FilterControls from "~/components/FilterControls.vue";
 
 const route = useRoute();
 const tracksStore = useTracksStore();
+const playerStore = usePlayerStore();
 
 const { tracks, categoryName, loading, error, fetchCategoryData } =
   useCategoryTracks();
@@ -95,6 +99,17 @@ const filteredTracks = computed(() => {
 
   return filtered;
 });
+
+//Синхронизация плейлиста плеера с отфильтрованными треками
+watch(
+  filteredTracks,
+  (newTracks) => {
+    if (newTracks.length > 0) {
+      playerStore.setPlaylist(newTracks);
+    }
+  },
+  { deep: true }
+);
 
 // Обновление заголовка страницы при изменении названия категории
 watch(categoryName, (newName) => {
