@@ -51,11 +51,15 @@ const props = defineProps({
 
 const route = useRoute();
 const track = toRef(props, "track");
-const index = toRef(props, "index");
 const pageTracks = toRef(props, "pageTracks");
 
 const favoritesStore = useFavoritesStore();
 const playerStore = usePlayerStore();
+
+// ✨ ИСПРАВЛЕНО: Приоритет на _id
+const getTrackId = (t) => {
+  return t?._id || t?.id || t?.trackId || t?.track_id || null;
+};
 
 // ✅ Определяем контекст страницы по имени маршрута
 const getPageContext = () => {
@@ -70,45 +74,54 @@ const getPageContext = () => {
 
 // Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
-  const id = track.value?.id;
-  if (id === undefined || id === null || id === "") return false;
+  const id = getTrackId(track.value);
+  if (!id) return false;
   return favoritesStore.isFavorite(id).value;
 });
 
 // Проверяем, является ли трек текущим
-const isCurrentTrack = computed(
-  () =>
-    !!(
-      playerStore.currentTrack &&
-      String(playerStore.currentTrack.id) === String(track.value.id)
-    )
-);
+const isCurrentTrack = computed(() => {
+  const trackId = getTrackId(track.value);
+  const currentTrackId = getTrackId(playerStore.currentTrack);
+
+  if (!trackId || !currentTrackId) return false;
+  return String(trackId) === String(currentTrackId);
+});
 
 // ✅ Обработка клика по треку
 const handleClick = () => {
+  const trackId = getTrackId(track.value);
+
   console.log("🎯 TrackItem.handleClick", {
     trackName: track.value.name,
-    index: index.value,
+    trackId: trackId,
+    trackUrl: track.value.track_file || track.value.url,
     pageTracksLength: pageTracks.value?.length,
     pageContext: getPageContext(),
   });
 
-  if (pageTracks.value && pageTracks.value.length) {
-    // ✅ Устанавливаем плейлист с контекстом страницы
-    playerStore.setPlaylist(pageTracks.value, index.value, getPageContext());
-    playerStore.play();
+  if (!pageTracks.value || !pageTracks.value.length) {
+    console.warn("❌ pageTracks пусто или не передано");
     return;
   }
 
-  // fallback — проиграть один трек
-  playerStore.setPlaylist([track.value], 0, getPageContext());
+  // 1. Устанавливаем плейлист
+  playerStore.setPlaylist(pageTracks.value, getPageContext());
+
+  // 2. Устанавливаем текущий трек
+  playerStore.setCurrentTrack(track.value);
+
+  // 3. Начинаем воспроизведение
   playerStore.play();
 };
 
 // ✅ Обработка клика по лайку
 const handleLike = async () => {
-  const id = track.value.id;
-  if (!id) return;
+  const id = getTrackId(track.value);
+  if (!id) {
+    console.warn("❌ Не найден ID трека для лайка");
+    return;
+  }
   try {
     await favoritesStore.toggleFavorite(id, track.value);
   } catch (err) {

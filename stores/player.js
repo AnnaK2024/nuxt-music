@@ -14,6 +14,7 @@ export const usePlayerStore = defineStore("player", {
     isRepeat: false,
     isShuffle: false,
     isRepeatPlaylist: false,
+    playlistContext: null,
   }),
 
   getters: {
@@ -28,25 +29,71 @@ export const usePlayerStore = defineStore("player", {
     hasNext(state) {
       if (!state.playlist.length) return false;
       if (state.isShuffle || state.isRepeatPlaylist) return true;
-      const currentIndex = state.playlist.findIndex(
-        (t) => t.id === state.currentTrack?.id
+      const currentIndex = state.playlist.findIndex((t) =>
+        this._compareIds(
+          this._getTrackId(t),
+          this._getTrackId(state.currentTrack)
+        )
       );
       return currentIndex !== -1 && currentIndex < state.playlist.length - 1;
     },
 
     currentIndex(state) {
-      return state.playlist.findIndex((t) => t.id === state.currentTrack?.id);
+      return state.playlist.findIndex((t) =>
+        this._compareIds(
+          this._getTrackId(t),
+          this._getTrackId(state.currentTrack)
+        )
+      );
     },
 
     currentTrackIndexOrZero(state) {
-      const idx = state.playlist.findIndex(
-        (t) => t.id === state.currentTrack?.id
+      const idx = state.playlist.findIndex((t) =>
+        this._compareIds(
+          this._getTrackId(t),
+          this._getTrackId(state.currentTrack)
+        )
       );
       return idx === -1 ? 0 : idx;
+    },
+
+    isCurrentTrackInPlaylist(state) {
+      if (!state.currentTrack || !state.playlist.length) return false;
+      return state.playlist.some((t) =>
+        this._compareIds(
+          this._getTrackId(t),
+          this._getTrackId(state.currentTrack)
+        )
+      );
     },
   },
 
   actions: {
+    // ✨ ИСПРАВЛЕНО: Приоритет на _id
+    _getTrackId(track) {
+      return (
+        track?._id || track?.id || track?.trackId || track?.track_id || null
+      );
+    },
+
+    // ✨ Сравнить ID
+    _compareIds(id1, id2) {
+      if (!id1 || !id2) return false;
+      return String(id1) === String(id2);
+    },
+
+    // ✨ Получить URL трека
+    _getTrackSrc(track) {
+      return (
+        track?.url ||
+        track?.track_file ||
+        track?.trackFile ||
+        track?.file ||
+        track?.src ||
+        ""
+      );
+    },
+
     initAudio(audioElement) {
       if (!audioElement) return;
       this.audioRef = audioElement;
@@ -70,7 +117,9 @@ export const usePlayerStore = defineStore("player", {
       });
 
       this.audioRef.addEventListener("ended", () => {
-        console.log("audio.ended", { currentTrackId: this.currentTrack?.id });
+        console.log("audio.ended", {
+          currentTrackId: this._getTrackId(this.currentTrack),
+        });
         if (this.isRepeat) {
           this.seekToPercent(0);
           this.play();
@@ -79,33 +128,61 @@ export const usePlayerStore = defineStore("player", {
         this.playNext();
       });
 
-      if (this.currentTrack && this.currentTrack.url) {
-        try {
-          this.audioRef.src = this.currentTrack.url;
-          this.audioRef.load();
-          if (this.isPlaying) {
-            this.audioRef
-              .play()
-              .then(() => this.setPlaying(true))
-              .catch(() => this.setPlaying(false));
+      if (this.currentTrack) {
+        const src = this._getTrackSrc(this.currentTrack);
+        if (src) {
+          try {
+            this.audioRef.src = src;
+            this.audioRef.load();
+            if (this.isPlaying) {
+              this.audioRef
+                .play()
+                .then(() => this.setPlaying(true))
+                .catch(() => this.setPlaying(false));
+            }
+          } catch (e) {
+            console.warn("initAudio: не удалось установить src:", e);
           }
-        } catch (e) {
-          console.warn("initAudio: не удалось установить src:", e);
         }
       }
     },
 
-    // ✅ ИСПРАВЛЕНО: больше не ищем в плейлисте
-    setPlaylist(tracks = [], startIndex = 0) {
-      this.playlist = Array.isArray(tracks) ? tracks.slice() : [];
-      if (this.playlist.length) {
-        this.setCurrentTrackByIndex(startIndex);
-      } else {
-        this.setCurrentTrack(null);
+    // ✅ Установка плейлиста
+    setPlaylist(tracks, context = null) {
+      this.playlist = tracks || [];
+      this.playlistContext = context;
+
+      console.log("setPlaylist", {
+        context,
+        playlistLength: this.playlist.length,
+        currentTrackId: this._getTrackId(this.currentTrack),
+      });
+
+      // ✅ Если текущий трек не в новом плейлисте, очищаем его
+      const currentTrackId = this._getTrackId(this.currentTrack);
+      if (
+        this.currentTrack &&
+        !this.playlist.find((t) =>
+          this._compareIds(this._getTrackId(t), currentTrackId)
+        )
+      ) {
+        console.log("Текущий трек не в новом плейлисте, очищаем");
+        this.currentTrack = null;
+        this.pause();
+        this.progress = 0;
+        this.currentTime = 0;
+        this.duration = 0;
       }
     },
 
-    // ✅ ИСПРАВЛЕНО: просто устанавливаем переданный трек
+    // ✨ Установка текущего трека и начало воспроизведения
+    playTrack(track) {
+      if (!track) return;
+      this.setCurrentTrack(track);
+      this.play();
+    },
+
+    // ✅ Установка текущего трека без воспроизведения
     setCurrentTrack(track) {
       if (!track) {
         this.currentTrack = null;
@@ -118,17 +195,8 @@ export const usePlayerStore = defineStore("player", {
         return;
       }
 
-      // Устанавливаем трек напрямую, без поиска в плейлисте
       this.currentTrack = track;
-
-      // Нормализуем поле с url
-      const src =
-        track.url ||
-        track.track_file ||
-        track.trackFile ||
-        track.file ||
-        track.src ||
-        "";
+      const src = this._getTrackSrc(track);
 
       if (this.audioRef) {
         this.audioRef.pause();
@@ -145,8 +213,14 @@ export const usePlayerStore = defineStore("player", {
           this.audioRef.pause();
           this.audioRef.src = "";
           this.audioRef.load();
+          console.warn("setCurrentTrack: URL трека не найден", track);
         }
       }
+
+      console.log("setCurrentTrack", {
+        trackId: this._getTrackId(track),
+        trackTitle: track.name || track.title,
+      });
     },
 
     // ✅ Установить текущий трек по индексу в playlist
@@ -161,15 +235,23 @@ export const usePlayerStore = defineStore("player", {
 
     play() {
       console.log("playerStore.play", {
-        currentTrackId: this.currentTrack?.id,
+        currentTrackId: this._getTrackId(this.currentTrack),
         isPlayingBefore: this.isPlaying,
       });
+
       if (!this.audioRef) {
         console.warn("play(): audioRef отсутствует");
         return;
       }
+
       if (!this.currentTrack && this.playlist.length) {
+        console.log("play(): нет текущего трека, устанавливаем первый");
         this.setCurrentTrackByIndex(0);
+      }
+
+      if (!this.currentTrack) {
+        console.warn("play(): нет текущего трека");
+        return;
       }
 
       console.log(
@@ -210,7 +292,9 @@ export const usePlayerStore = defineStore("player", {
         isShuffle: this.isShuffle,
         isRepeatPlaylist: this.isRepeatPlaylist,
         playlistLength: this.playlist.length,
+        currentIndex: this.currentIndex,
       });
+
       if (!this.playlist.length) return;
 
       if (this.isShuffle) {
@@ -220,9 +304,13 @@ export const usePlayerStore = defineStore("player", {
         return;
       }
 
-      const currentIndex = this.playlist.findIndex(
-        (t) => t.id === this.currentTrack?.id
+      const currentTrackId = this._getTrackId(this.currentTrack);
+      const currentIndex = this.playlist.findIndex((t) =>
+        this._compareIds(this._getTrackId(t), currentTrackId)
       );
+
+      console.log("playNext: currentIndex =", currentIndex);
+
       if (currentIndex === -1) {
         this.setCurrentTrackByIndex(0);
         this.play();
@@ -238,6 +326,7 @@ export const usePlayerStore = defineStore("player", {
           this.setCurrentTrackByIndex(currentIndex + 1);
           this.play();
         } else {
+          console.log("playNext: конец плейлиста");
           this.pause();
         }
       }
@@ -245,9 +334,20 @@ export const usePlayerStore = defineStore("player", {
 
     playPrev() {
       if (!this.playlist.length) return;
-      const currentIndex = this.playlist.findIndex(
-        (t) => t.id === this.currentTrack?.id
+
+      const currentTrackId = this._getTrackId(this.currentTrack);
+      const currentIndex = this.playlist.findIndex((t) =>
+        this._compareIds(this._getTrackId(t), currentTrackId)
       );
+
+      console.log("playPrev: currentIndex =", currentIndex);
+
+      if (currentIndex === -1) {
+        this.setCurrentTrackByIndex(0);
+        this.play();
+        return;
+      }
+
       const prevIndex =
         currentIndex <= 0 ? this.playlist.length - 1 : currentIndex - 1;
       this.setCurrentTrackByIndex(prevIndex);
@@ -277,6 +377,20 @@ export const usePlayerStore = defineStore("player", {
 
     toggleShuffle() {
       this.isShuffle = !this.isShuffle;
+    },
+
+    clearPlaylist() {
+      this.currentTrack = null;
+      this.playlist = [];
+      this.playlistContext = null;
+      this.pause();
+      this.progress = 0;
+      this.currentTime = 0;
+      this.duration = 0;
+    },
+
+    getCurrentTrackIndex() {
+      return this.currentIndex;
     },
   },
 });

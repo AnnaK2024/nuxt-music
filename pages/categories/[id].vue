@@ -100,17 +100,6 @@ const filteredTracks = computed(() => {
   return filtered;
 });
 
-//Синхронизация плейлиста плеера с отфильтрованными треками
-// watch(
-//   filteredTracks,
-//   (newTracks) => {
-//     if (newTracks.length > 0) {
-//       playerStore.setPlaylist(newTracks);
-//     }
-//   },
-//   { deep: true }
-// );
-
 // Обновление заголовка страницы при изменении названия категории
 watch(categoryName, (newName) => {
   useHead({

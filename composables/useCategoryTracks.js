@@ -7,7 +7,7 @@ export const useCategoryTracks = () => {
   const categoryName = ref("");
   const loading = ref(false);
   const error = ref(null);
-  const searchQuery = ref(""); // Новая переменная для строки поиска
+  const searchQuery = ref(""); 
 
   // Функция для загрузки одного трека по ID (без изменений)
   const fetchTrackById = async (trackId) => {
@@ -27,31 +27,31 @@ export const useCategoryTracks = () => {
   // Computed для отфильтрованных треков (реактивно обновляется при изменении searchQuery или tracks)
   const filteredTracks = computed(() => {
     if (!searchQuery.value.trim()) {
-      return tracks.value; // Если поиск пустой, возвращаем все треки
+      return tracks.value; 
     }
     const query = searchQuery.value.toLowerCase();
     return tracks.value.filter((track) => {
-      // Предполагаем поля: name (название трека), artist (имя артиста). Адаптируй под реальную структуру!
+      
       const nameMatch = track.name?.toLowerCase().includes(query);
       const artistMatch = track.artist?.toLowerCase().includes(query);
-      return nameMatch || artistMatch; // Фильтр по названию ИЛИ артисту
+      return nameMatch || artistMatch; 
     });
   });
 
   const fetchCategoryData = async (id) => {
-    // Без изменений (твой код загрузки)
+    
     loading.value = true;
     error.value = null;
     tracks.value = [];
 
     try {
-      console.log("Запрос к подборке ID:", id);
+      
       const response = await fetch(`${API_URL}/catalog/selection/${id}`);
       if (!response.ok) {
         throw new Error("Не удалось получить данные категории");
       }
       const data = await response.json();
-      console.log("Ответ API для подборки:", data);
+      
 
       if (!data.success || !data.data) {
         throw new Error("Неверный формат ответа API");
@@ -65,11 +65,11 @@ export const useCategoryTracks = () => {
         Array.isArray(categoryData.items) &&
         categoryData.items.length > 0
       ) {
-        console.log("Загружаем треки по ID:", categoryData.items);
+        
         const trackPromises = categoryData.items.map(fetchTrackById);
         const loadedTracks = await Promise.all(trackPromises);
         tracks.value = loadedTracks.filter((track) => track !== null);
-        console.log("Загруженные треки:", tracks.value);
+        
       } else {
         console.warn("Нет items в подборке или они пустые");
         tracks.value = [];
