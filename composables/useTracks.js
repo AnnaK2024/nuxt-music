@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 const API_URL = "https://webdev-music-003b5b991590.herokuapp.com";
 
@@ -19,9 +19,8 @@ export const useTracks = () => {
 
   const fetchTracks = async () => {
     loading.value = true;
-    if (error.value) {
-      console.error("Ошибка загрузки треков:", error.value);
-    }
+    error.value = null;
+
     try {
       const response = await fetch(`${API_URL}/catalog/track/all/`);
       console.log("Ответ API:", response);

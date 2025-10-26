@@ -39,6 +39,7 @@
 
 <script setup>
 import { toRef, computed } from "vue";
+import { useRoute } from "vue-router";
 import { useFavoritesStore } from "~/stores/favorites";
 import { usePlayerStore } from "~/stores/player";
 
@@ -48,12 +49,24 @@ const props = defineProps({
   pageTracks: { type: Array, required: true },
 });
 
+const route = useRoute();
 const track = toRef(props, "track");
 const index = toRef(props, "index");
 const pageTracks = toRef(props, "pageTracks");
 
 const favoritesStore = useFavoritesStore();
 const playerStore = usePlayerStore();
+
+// ✅ Определяем контекст страницы по имени маршрута
+const getPageContext = () => {
+  const routeName = route.name;
+
+  if (routeName?.includes("favorites")) return "favorites";
+  if (routeName?.includes("categories")) return "category";
+  if (routeName?.includes("selection")) return "category";
+
+  return "main";
+};
 
 // Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
@@ -71,19 +84,28 @@ const isCurrentTrack = computed(
     )
 );
 
+// ✅ Обработка клика по треку
 const handleClick = () => {
-  // Устанавливаем весь массив страницы как плейлист и ставим текущий индекс
+  console.log("🎯 TrackItem.handleClick", {
+    trackName: track.value.name,
+    index: index.value,
+    pageTracksLength: pageTracks.value?.length,
+    pageContext: getPageContext(),
+  });
+
   if (pageTracks.value && pageTracks.value.length) {
-    playerStore.setPlaylist(pageTracks.value, index.value);
+    // ✅ Устанавливаем плейлист с контекстом страницы
+    playerStore.setPlaylist(pageTracks.value, index.value, getPageContext());
     playerStore.play();
     return;
   }
 
   // fallback — проиграть один трек
-  playerStore.setPlaylist([track.value], 0);
+  playerStore.setPlaylist([track.value], 0, getPageContext());
   playerStore.play();
 };
 
+// ✅ Обработка клика по лайку
 const handleLike = async () => {
   const id = track.value.id;
   if (!id) return;

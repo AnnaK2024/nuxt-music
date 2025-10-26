@@ -1,110 +1,119 @@
 <template>
-  <div class="bar">
-    <div class="bar__content">
-      <div class="bar__player-progress" @click="handleProgressClick">
-        <div
-          class="bar__player-progress-line"
-          :style="{ width: playerStore.progress + '%' }"
-        />
-        <div class="bar__time current-time">{{ playerStore.formattedCurrentTime }}</div>
-        <div class="bar__time total-time">{{ playerStore.formattedDuration }}</div>
-      </div>
-      <div class="bar__player-block">
-        <div class="bar__player player">
-          <div class="player__controls">
-            <div class="player__btn-prev" @click="handlePrev">
-              <svg class="player__btn-prev-svg">
-                <use xlink:href="/icons/sprite.svg#icon-prev" />
-              </svg>
-            </div>
-            <div class="player__btn-play _btn" @click="handlePlay">
-              <svg class="player__btn-play-svg">
-                <use
-                  :xlink:href="
-                    playerStore.isPlaying
-                      ? '/icons/sprite.svg#icon-pause'
-                      : '/icons/sprite.svg#icon-play'
-                  "
-                />
-              </svg>
-            </div>
-            <div class="player__btn-next" @click="handleNext">
-              <svg class="player__btn-next-svg">
-                <use xlink:href="/icons/sprite.svg#icon-next" />
-              </svg>
-            </div>
+  <div>
+    <Transition name="fade">
+      <div v-if="playerStore.currentTrack" class="bar">
+        <div class="bar__content">
+          <div class="bar__player-progress" @click="handleProgressClick">
             <div
-              class="player__btn-repeat _btn-icon"
-              :class="{ active: playerStore.isRepeat }"
-              @click="handleRepeatToggle"
-            >
-              <svg class="player__btn-repeat-svg">
-                <use xlink:href="/icons/sprite.svg#icon-repeat" />
-              </svg>
+              class="bar__player-progress-line"
+              :style="{ width: playerStore.progress + '%' }"
+            />
+            <div class="bar__time current-time">
+              {{ playerStore.formattedCurrentTime }}
             </div>
-            <div
-              class="player__btn-shuffle _btn-icon"
-              :class="{ active: playerStore.isShuffle }"
-              @click="handleShuffleToggle"
-            >
-              <svg class="player__btn-shuffle-svg">
-                <use xlink:href="/icons/sprite.svg#icon-shuffle" />
-              </svg>
+            <div class="bar__time total-time">
+              {{ playerStore.formattedDuration }}
             </div>
           </div>
-          <div class="player__track-play track-play">
-            <div class="track-play__contain">
-              <div class="track-play__image">
-                <svg class="track-play__svg">
-                  <use xlink:href="/icons/sprite.svg#icon-note" />
-                </svg>
+          <div class="bar__player-block">
+            <div class="bar__player player">
+              <div class="player__controls">
+                <div class="player__btn-prev" @click="handlePrev">
+                  <svg class="player__btn-prev-svg">
+                    <use xlink:href="/icons/sprite.svg#icon-prev" />
+                  </svg>
+                </div>
+                <div class="player__btn-play _btn" @click="handlePlay">
+                  <svg class="player__btn-play-svg">
+                    <use
+                      :xlink:href="
+                        playerStore.isPlaying
+                          ? '/icons/sprite.svg#icon-pause'
+                          : '/icons/sprite.svg#icon-play'
+                      "
+                    />
+                  </svg>
+                </div>
+                <div class="player__btn-next" @click="handleNext">
+                  <svg class="player__btn-next-svg">
+                    <use xlink:href="/icons/sprite.svg#icon-next" />
+                  </svg>
+                </div>
+                <div
+                  class="player__btn-repeat _btn-icon"
+                  :class="{ active: playerStore.isRepeat }"
+                  @click="handleRepeatToggle"
+                >
+                  <svg class="player__btn-repeat-svg">
+                    <use xlink:href="/icons/sprite.svg#icon-repeat" />
+                  </svg>
+                </div>
+                <div
+                  class="player__btn-shuffle _btn-icon"
+                  :class="{ active: playerStore.isShuffle }"
+                  @click="handleShuffleToggle"
+                >
+                  <svg class="player__btn-shuffle-svg">
+                    <use xlink:href="/icons/sprite.svg#icon-shuffle" />
+                  </svg>
+                </div>
               </div>
-              <div class="track-play__author">
-                <a class="track-play__author-link" href="#">{{
-                  playerStore.currentTrack?.author || "Выберите трек"
-                }}</a>
-              </div>
-              <div class="track-play__album">
-                <a class="track-play__album-link" href="#">{{
-                  playerStore.currentTrack?.album || ""
-                }}</a>
+              <div class="player__track-play track-play">
+                <div class="track-play__contain">
+                  <div class="track-play__image">
+                    <svg class="track-play__svg">
+                      <use xlink:href="/icons/sprite.svg#icon-note" />
+                    </svg>
+                  </div>
+                  <div class="track-play__author">
+                    <a class="track-play__author-link" href="#">{{
+                      playerStore.currentTrack?.author || "Выберите трек"
+                    }}</a>
+                  </div>
+                  <div class="track-play__album">
+                    <a class="track-play__album-link" href="#">{{
+                      playerStore.currentTrack?.album || ""
+                    }}</a>
+                  </div>
+                </div>
+                <div class="track-play__like-dis">
+                  <div
+                    class="track-play__like _btn-icon"
+                    :class="{ active: isLiked }"
+                    @click="handleLike"
+                  >
+                    <svg class="track-play__like-svg">
+                      <use xlink:href="/icons/sprite.svg#icon-like" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="track-play__like-dis">
-              <div
-                class="track-play__like _btn-icon"
-                :class="{ active: isLiked }"
-                @click="handleLike"
-              >
-                <svg class="track-play__like-svg">
-                  <use xlink:href="/icons/sprite.svg#icon-like" />
-                </svg>
+            <div class="bar__volume-block">
+              <div class="volume__content">
+                <div class="volume__image">
+                  <svg class="volume__svg">
+                    <use xlink:href="/icons/sprite.svg#icon-volume" />
+                  </svg>
+                </div>
+                <div class="volume__progress _btn">
+                  <input
+                    v-model="playerStore.volume"
+                    class="volume__progress-line _btn"
+                    type="range"
+                    name="range"
+                    min="0"
+                    max="100"
+                    @input="onVolumeInput"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="bar__volume-block">
-          <div class="volume__content">
-            <div class="volume__image">
-              <svg class="volume__svg">
-                <use xlink:href="/icons/sprite.svg#icon-volume" />
-              </svg>
-            </div>
-            <div class="volume__progress _btn">
-              <input
-                v-model="playerStore.volume"
-                class="volume__progress-line _btn"
-                type="range"
-                name="range"
-                min="0"
-                max="100"
-                @input="onVolumeInput"
-              />
-            </div>
-          </div>
-        </div>
+        
       </div>
-    </div>
+    </Transition>
     <audio ref="audioRef" @timeupdate="onTimeUpdate" @ended="onTrackEnd" />
   </div>
 </template>
@@ -114,7 +123,6 @@ import { ref, onMounted, computed } from "vue";
 import { usePlayerStore } from "~/stores/player";
 import { useFavoritesStore } from "~/stores/favorites";
 
-
 const playerStore = usePlayerStore();
 const favoritesStore = useFavoritesStore();
 const audioRef = ref(null);
@@ -123,13 +131,13 @@ onMounted(async () => {
   playerStore.initAudio(audioRef.value);
 });
 
-// <-- НОВОЕ: Computed-свойство для проверки, лайкнут ли текущий трек
+// Computed-свойство для проверки, лайкнут ли текущий трек
 const isLiked = computed(() => {
-  if (!playerStore.currentTrack) return false; // Если трека нет, лайк невозможен
-  return favoritesStore.isFavorite(playerStore.currentTrack.id).value; // Используем метод из store
+  if (!playerStore.currentTrack) return false;
+  return favoritesStore.isFavorite(playerStore.currentTrack.id).value;
 });
 
-// <-- НОВОЕ: Обработчик клика на сердечке
+// Обработчик клика на сердечке
 const handleLike = async () => {
   if (!playerStore.currentTrack) {
     console.warn("Нет текущего трека для лайка");
@@ -137,23 +145,19 @@ const handleLike = async () => {
   }
 
   try {
-    // Переключаем статус (добавляем или удаляем из избранного)
     await favoritesStore.toggleFavorite(
       playerStore.currentTrack.id,
       playerStore.currentTrack
     );
-    // После toggle, isLiked автоматически обновится благодаря реактивности
   } catch (error) {
     console.error("Ошибка при переключении лайка:", error);
-    // Здесь можно добавить уведомление пользователю, например, через toast или alert
   }
 };
 
 const handlePlay = () => {
   if (playerStore.isPlaying) {
-    playerStore.pause(); // Если играет, ставим на паузу
+    playerStore.pause();
   } else {
-    // если нет currentTrack, ничего не делаем — трек должен быть установлен при клике на TrackItem
     if (!playerStore.currentTrack && playerStore.playlist.length) {
       playerStore.setCurrentTrackByIndex(0);
     }
@@ -167,11 +171,9 @@ const handleRepeatToggle = () => playerStore.toggleRepeat();
 const handleShuffleToggle = () => playerStore.toggleShuffle();
 
 const onVolumeInput = () => {
-  // v-model уже обновляет playerStore.volume, но для безопасности вызываем сеттер
   playerStore.setVolume(Number(playerStore.volume));
 };
 
-// progress click — высчитываем процент и делаем seek
 const handleProgressClick = (event) => {
   const bar = event.currentTarget;
   const rect = bar.getBoundingClientRect();
@@ -180,16 +182,14 @@ const handleProgressClick = (event) => {
   playerStore.seekToPercent(pct);
 };
 
-// События audio — мы уже слушаем в сторе, но если composable не делает этого, синхронизируем:
 const onTimeUpdate = () => {
-  // playerStore обновляет progress через слушатель внутри initAudio; тут можно оставить пусто
+  // playerStore обновляет progress через слушатель внутри initAudio
 };
+
 const onTrackEnd = () => {
-  // тоже можно оставить пусто — лог handled в сторе
+  // обработка конца трека в сторе
 };
-
 </script>
-
 
 <style lang="scss" scoped>
 .bar {
@@ -534,5 +534,14 @@ const onTrackEnd = () => {
 
 .volume__progress-line {
   width: 109px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

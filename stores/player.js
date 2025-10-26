@@ -6,9 +6,9 @@ export const usePlayerStore = defineStore("player", {
     currentTrack: null,
     playlist: [],
     isPlaying: false,
-    progress: 0, // 0..100
-    currentTime: 0, // seconds
-    duration: 0, // seconds
+    progress: 0,
+    currentTime: 0,
+    duration: 0,
     volume: 50,
     audioRef: null,
     isRepeat: false,
@@ -17,15 +17,14 @@ export const usePlayerStore = defineStore("player", {
   }),
 
   getters: {
-    // Форматированное текущее время
     formattedCurrentTime(state) {
       return formatTime(state.currentTime);
     },
 
-    // Форматированная длительность трека
     formattedDuration(state) {
       return formatTime(state.duration);
     },
+
     hasNext(state) {
       if (!state.playlist.length) return false;
       if (state.isShuffle || state.isRepeatPlaylist) return true;
@@ -34,9 +33,11 @@ export const usePlayerStore = defineStore("player", {
       );
       return currentIndex !== -1 && currentIndex < state.playlist.length - 1;
     },
+
     currentIndex(state) {
       return state.playlist.findIndex((t) => t.id === state.currentTrack?.id);
     },
+
     currentTrackIndexOrZero(state) {
       const idx = state.playlist.findIndex(
         (t) => t.id === state.currentTrack?.id
@@ -46,7 +47,6 @@ export const usePlayerStore = defineStore("player", {
   },
 
   actions: {
-    // Инициализируем audio-элемент (вызывается из PlayerBar once)
     initAudio(audioElement) {
       if (!audioElement) return;
       this.audioRef = audioElement;
@@ -60,14 +60,10 @@ export const usePlayerStore = defineStore("player", {
         console.error("audio element error", ev, this.audioRef.error);
       });
 
-      // Слушатели
       this.audioRef.addEventListener("timeupdate", () => {
         const realCurrentTime = this.audioRef.currentTime;
-
         this.currentTime = Math.floor(realCurrentTime);
-
         this.duration = Math.floor(this.audioRef.duration || 0);
-
         this.progress = this.duration
           ? (realCurrentTime / this.duration) * 100
           : 0;
@@ -75,21 +71,18 @@ export const usePlayerStore = defineStore("player", {
 
       this.audioRef.addEventListener("ended", () => {
         console.log("audio.ended", { currentTrackId: this.currentTrack?.id });
-        // Если repeat — повторяем текущий трек
         if (this.isRepeat) {
           this.seekToPercent(0);
           this.play();
           return;
         }
-        // Иначе пытаемся перейти к следующему
         this.playNext();
       });
-      // Если currentTrack уже установлен — подхватываем его в audio
+
       if (this.currentTrack && this.currentTrack.url) {
         try {
           this.audioRef.src = this.currentTrack.url;
           this.audioRef.load();
-          // Попытаться воспроизвести если флаг isPlaying был true
           if (this.isPlaying) {
             this.audioRef
               .play()
@@ -102,20 +95,18 @@ export const usePlayerStore = defineStore("player", {
       }
     },
 
-    // Устанавливаем playlist. Сохраняем currentTrack если он есть в новом списке.
+    // ✅ ИСПРАВЛЕНО: больше не ищем в плейлисте
     setPlaylist(tracks = [], startIndex = 0) {
       this.playlist = Array.isArray(tracks) ? tracks.slice() : [];
       if (this.playlist.length) {
-        // При установке плейлиста явно выбираем track по startIndex:
         this.setCurrentTrackByIndex(startIndex);
       } else {
         this.setCurrentTrack(null);
       }
     },
 
-    // Установить текущий трек по объекту
+    // ✅ ИСПРАВЛЕНО: просто устанавливаем переданный трек
     setCurrentTrack(track) {
-      // безопасно
       if (!track) {
         this.currentTrack = null;
         if (this.audioRef) {
@@ -127,17 +118,16 @@ export const usePlayerStore = defineStore("player", {
         return;
       }
 
-      // Найти трек в плейлисте (если есть) и установить
-      const found = this.playlist.find((t) => t.id === track.id) || track;
-      this.currentTrack = found;
+      // Устанавливаем трек напрямую, без поиска в плейлисте
+      this.currentTrack = track;
 
-      // Нормализуем поле с url (поддерживаем несколько вариантов)
+      // Нормализуем поле с url
       const src =
-        found.url ||
-        found.track_file ||
-        found.trackFile ||
-        found.file ||
-        found.src ||
+        track.url ||
+        track.track_file ||
+        track.trackFile ||
+        track.file ||
+        track.src ||
         "";
 
       if (this.audioRef) {
@@ -145,7 +135,6 @@ export const usePlayerStore = defineStore("player", {
         this.audioRef.currentTime = 0;
 
         if (src) {
-          // Если относительный путь — привести к абсолютному, если нужно
           try {
             this.audioRef.src = new URL(src, window.location.href).href;
           } catch {
@@ -160,7 +149,7 @@ export const usePlayerStore = defineStore("player", {
       }
     },
 
-    // Установить текущий трек по индексу в playlist
+    // ✅ Установить текущий трек по индексу в playlist
     setCurrentTrackByIndex(index) {
       if (!this.playlist.length) {
         this.currentTrack = null;
@@ -170,7 +159,6 @@ export const usePlayerStore = defineStore("player", {
       this.setCurrentTrack(this.playlist[idx]);
     },
 
-    // Воспроизвести / поставить на паузу
     play() {
       console.log("playerStore.play", {
         currentTrackId: this.currentTrack?.id,
@@ -198,7 +186,6 @@ export const usePlayerStore = defineStore("player", {
         })
         .catch((err) => {
           console.warn("audio.play() failed:", err);
-          // браузер мог блокировать autoplay — показываем корректный флаг
           this.setPlaying(false);
         });
     },
@@ -213,13 +200,11 @@ export const usePlayerStore = defineStore("player", {
       this.isPlaying = !!value;
     },
 
-    // Воспроизвести трек по индексу в текущем плейлисте
     playTrackByIndex(index) {
       this.setCurrentTrackByIndex(index);
       this.play();
     },
 
-    // Переход к следующему треку
     playNext() {
       console.log("playerStore.playNext", {
         isShuffle: this.isShuffle,
@@ -253,14 +238,11 @@ export const usePlayerStore = defineStore("player", {
           this.setCurrentTrackByIndex(currentIndex + 1);
           this.play();
         } else {
-          // конец — останавливаем
           this.pause();
-          // можно: this.setCurrentTrack(null)
         }
       }
     },
 
-    // Предыдущий трек
     playPrev() {
       if (!this.playlist.length) return;
       const currentIndex = this.playlist.findIndex(
@@ -272,7 +254,6 @@ export const usePlayerStore = defineStore("player", {
       this.play();
     },
 
-    // Скидывает прогресс / seek
     seekToPercent(percent) {
       if (!this.audioRef || !this.audioRef.duration) return;
       const sec = (percent / 100) * this.audioRef.duration;
@@ -286,13 +267,14 @@ export const usePlayerStore = defineStore("player", {
       if (this.audioRef) this.audioRef.volume = this.volume / 100;
     },
 
-    // Тогглы
     toggleRepeat() {
       this.isRepeat = !this.isRepeat;
     },
+
     toggleRepeatPlaylist() {
       this.isRepeatPlaylist = !this.isRepeatPlaylist;
     },
+
     toggleShuffle() {
       this.isShuffle = !this.isShuffle;
     },
