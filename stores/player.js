@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { formatTime } from "~/utils/time";
 
 export const usePlayerStore = defineStore("player", {
   state: () => ({
@@ -16,6 +17,15 @@ export const usePlayerStore = defineStore("player", {
   }),
 
   getters: {
+    // Форматированное текущее время
+    formattedCurrentTime(state) {
+      return formatTime(state.currentTime);
+    },
+
+    // Форматированная длительность трека
+    formattedDuration(state) {
+      return formatTime(state.duration);
+    },
     hasNext(state) {
       if (!state.playlist.length) return false;
       if (state.isShuffle || state.isRepeatPlaylist) return true;
@@ -52,10 +62,14 @@ export const usePlayerStore = defineStore("player", {
 
       // Слушатели
       this.audioRef.addEventListener("timeupdate", () => {
-        this.currentTime = Math.floor(this.audioRef.currentTime);
+        const realCurrentTime = this.audioRef.currentTime;
+
+        this.currentTime = Math.floor(realCurrentTime);
+
         this.duration = Math.floor(this.audioRef.duration || 0);
+
         this.progress = this.duration
-          ? (this.currentTime / this.duration) * 100
+          ? (realCurrentTime / this.duration) * 100
           : 0;
       });
 
@@ -127,11 +141,14 @@ export const usePlayerStore = defineStore("player", {
         "";
 
       if (this.audioRef) {
+        this.audioRef.pause();
+        this.audioRef.currentTime = 0;
+
         if (src) {
           // Если относительный путь — привести к абсолютному, если нужно
           try {
             this.audioRef.src = new URL(src, window.location.href).href;
-          } catch (e) {
+          } catch {
             this.audioRef.src = src;
           }
           this.audioRef.load();
@@ -167,7 +184,12 @@ export const usePlayerStore = defineStore("player", {
         this.setCurrentTrackByIndex(0);
       }
 
-      console.log("play: src=", this.audioRef?.src, "currentTrack=", this.currentTrack);
+      console.log(
+        "play: src=",
+        this.audioRef?.src,
+        "currentTrack=",
+        this.currentTrack
+      );
 
       this.audioRef
         .play()

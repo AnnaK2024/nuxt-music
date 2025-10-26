@@ -6,8 +6,8 @@
           class="bar__player-progress-line"
           :style="{ width: playerStore.progress + '%' }"
         />
-        <div class="bar__time current-time">{{ formattedCurrentTime }}</div>
-        <div class="bar__time total-time">{{ formattedDuration }}</div>
+        <div class="bar__time current-time">{{ playerStore.formattedCurrentTime }}</div>
+        <div class="bar__time total-time">{{ playerStore.formattedDuration }}</div>
       </div>
       <div class="bar__player-block">
         <div class="bar__player player">
@@ -114,6 +114,7 @@ import { ref, onMounted, computed } from "vue";
 import { usePlayerStore } from "~/stores/player";
 import { useFavoritesStore } from "~/stores/favorites";
 
+
 const playerStore = usePlayerStore();
 const favoritesStore = useFavoritesStore();
 const audioRef = ref(null);
@@ -187,29 +188,8 @@ const onTrackEnd = () => {
   // тоже можно оставить пусто — лог handled в сторе
 };
 
-const formattedCurrentTime = computed(() => {
-  const sec = playerStore.currentTime || 0;
-  const m = Math.floor(sec / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = Math.floor(sec % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${m}:${s}`;
-});
-const formattedDuration = computed(() => {
-  const sec = playerStore.duration || 0;
-  const m = Math.floor(sec / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = Math.floor(sec % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${m}:${s}`;
-});
-
-
 </script>
+
 
 <style lang="scss" scoped>
 .bar {

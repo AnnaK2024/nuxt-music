@@ -19,7 +19,6 @@ defineProps({
 
 <style lang="scss" scoped>
 .wrapper {
-  max-width: 1920px;
   height: 100vh;
   margin: 0 auto;
   position: relative;
@@ -35,10 +34,10 @@ defineProps({
   gap: 30px;
   padding-top: 400px;
 }
-h1{
+h1 {
   font-size: 50px;
 }
-p{
+p {
   font-size: 30px;
 }
 .btn {
@@ -56,5 +55,4 @@ p{
 .btn:hover {
   background-color: #7e49b8;
 }
-
 </style>

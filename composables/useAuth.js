@@ -9,6 +9,7 @@ export function useAuth() {
 
   const loading = ref(false);
   const error = ref(null);
+  let refreshPromise = null; // Флаг для предотвращения двойного обновления
 
   function getAccessToken() {
     return localStorage.getItem("access_token");
@@ -91,7 +92,7 @@ export function useAuth() {
         throw new Error(err.message || "Ошибка регистрации");
       }
 
-      // После успешной регистрации перенаправляем на логин (как в оригинале)
+      // После успешной регистрации перенаправляем на логин
       await router.push("/login");
     } catch (e) {
       error.value = e.message;
@@ -107,26 +108,37 @@ export function useAuth() {
     router.push("/login");
   }
 
-  // Обновление токена (без изменений, корректно работает с API)
+  // Обновление токена с защитой от двойного запроса
   async function refreshAccessToken() {
     const refresh = getRefreshToken();
     if (!refresh) throw new Error("Нет refresh токена");
 
-    const res = await fetch(`${API_URL}/token/refresh/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
-    });
+    // Если уже идет обновление, ждем результат
+    if (refreshPromise) return refreshPromise;
 
-    if (!res.ok) {
-      clearTokens();
-      userStore.clear();
-      throw new Error("Не удалось обновить токен");
-    }
+    refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${API_URL}/token/refresh/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh }),
+        });
 
-    const data = await res.json();
-    localStorage.setItem("access_token", data.access);
-    return data.access;
+        if (!res.ok) {
+          clearTokens();
+          userStore.clear();
+          throw new Error("Не удалось обновить токен");
+        }
+
+        const data = await res.json();
+        localStorage.setItem("access_token", data.access);
+        return data.access;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
   }
 
   async function fetchWithAuth(url, options = {}) {
@@ -134,11 +146,16 @@ export function useAuth() {
 
     if (!options.headers) options.headers = {};
     options.headers["Content-Type"] = "application/json";
-    if (accessToken) options.headers["Authorization"] = `Bearer ${accessToken}`;
+    
+    // ВСЕГДА добавляем токен если он есть
+    if (accessToken) {
+      options.headers["Authorization"] = `Bearer ${accessToken}`;
+    }
 
     let res = await fetch(url, options);
 
-    if (res.status === 401) {
+    // Обработка 401 с повторным обновлением токена
+    if (res.status === 401 && getRefreshToken()) {
       try {
         accessToken = await refreshAccessToken();
         options.headers["Authorization"] = `Bearer ${accessToken}`;
@@ -148,6 +165,10 @@ export function useAuth() {
         logout();
         throw new Error("Сессия истекла, требуется вход");
       }
+    } else if (res.status === 401) {
+      // Если нет refresh токена — выходим
+      logout();
+      throw new Error("Требуется аутентификация");
     }
 
     return res;
