@@ -4,7 +4,7 @@ import {
   extractYearFromReleaseDate,
   normalizeGenreName,
   normalizeTrack,
-} from "~/utils/trackUtils";
+} from "../trackUtils";
 
 describe("normalizeId", () => {
   it("должна вернуть null для null", () => {
