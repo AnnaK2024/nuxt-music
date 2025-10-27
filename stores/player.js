@@ -263,6 +263,7 @@ export const usePlayerStore = defineStore("player", {
     // Предыдущий трек
     playPrev() {
       if (!this.playlist.length) return;
+
       const currentIndex = this.playlist.findIndex(
         (t) => t.id === this.currentTrack?.id
       );
