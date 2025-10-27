@@ -5,39 +5,38 @@
         <use xlink:href="/icons/sprite.svg#icon-search" />
       </svg>
       <input
-        v-model="tracksStore.filters.searchQuery"
+        v-model="searchQuery"
         class="search__text"
         type="search"
         placeholder="Поиск"
         name="search"
+        @input="favoritesStore.setFilters({ searchQuery })"
       />
     </div>
-    <h2 class="centerblock__h2">Треки</h2>
-    <FilterControls />
-    <PlayList />
+
+    <h2 class="centerblock__h2">Мои треки</h2>
+    <FilterControls :store="favoritesStore" />
+    <div v-if="favoritesStore.favoriteTracks.length === 0" class="empty-state">
+      <p class="no-tracks-message">Нет избранных треков</p>
+    </div>
+    <div v-else>
+      <PlayList :tracks="favoritesStore.favoriteTracks" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
-import { useTracksStore } from "~/stores/tracks";
 import { useFavoritesStore } from "~/stores/favorites";
 
-const tracksStore = useTracksStore();
+const searchQuery = ref("");
 const favoritesStore = useFavoritesStore();
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      tracksStore.loadTracks(),
-      favoritesStore.loadFavorites(),
-    ]);
+    await favoritesStore.loadFavorites();
   } catch (error) {
-    console.error("Ошибка загрузки данных:", error);
-    if (error.response?.status === 401) {
-      await navigateTo("/login");
-      return;
-    }
+    console.error("Ошибка загрузки:", error);
   }
 });
 </script>
@@ -121,5 +120,11 @@ onMounted(async () => {
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
+}
+.no-tracks-message {
+  text-align: left;
+  padding: 20px;
+  color: #666;
+  font-size: 35px;
 }
 </style>

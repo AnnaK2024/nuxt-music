@@ -1,192 +1,196 @@
-import { usePlayerStore } from "~/stores/player";
-import { watch, ref } from "vue";
+// import { usePlayerStore } from "~/stores/player";
+// import { watch, ref, watchEffect } from "vue";
 
-export function useAudioPlayer() {
-  const playerStore = usePlayerStore();
+// export function useAudioPlayer() {
+//   const playerStore = usePlayerStore();
 
-  const currentTime = ref(0);
-  const duration = ref(0);
+//   const currentTime = ref(0);
+//   const duration = ref(0);
+//   const currentTrack = ref(null);
 
-  const initPlayer = (audioElement) => {
-    playerStore.setAudioRef(audioElement);
+//   const initPlayer = (audioElement) => {
+//     playerStore.setAudioRef(audioElement);
 
-    audioElement.addEventListener("timeupdate", handleTimeUpdate);
-    audioElement.addEventListener("ended", handleTrackEnd);
-    audioElement.addEventListener("loadedmetadata", () => {
-      duration.value = audioElement.duration || 0;
-    });
-  };
+//     audioElement.addEventListener("timeupdate", handleTimeUpdate);
+//     audioElement.addEventListener("ended", handleTrackEnd);
+//     audioElement.addEventListener("loadedmetadata", () => {
+//       duration.value = audioElement.duration || 0;
+//     });
+//   };
 
-  const playTrack = (track) => {
-    if (!track.track_file) {
-      console.warn("Трек не содержит файл для воспроизведения");
-      playerStore.setPlaying(false);
-      return;
-    }
+//   const playTrack = (track) => {
+//     if (!track || !track.track_file) {
+//       playerStore.setPlaying(false);
+//       return;
+//     }
 
-    if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
-      playerStore.setPlaying(false);
-      return;
-    }
+//     if (!playerStore.audioRef) {
+//       playerStore.setPlaying(false);
+//       return;
+//     }
 
-    playerStore.audioRef.removeEventListener("canplay", playerStore._onCanPlay);
+//     if (playerStore.audioRef.src === track.track_file) {
+//       playerStore.audioRef
+//         .play()
+//         .then(() => {
+//           playerStore.setPlaying(true);
+//         })
+//         .catch((e) => {
+//           console.error("Ошибка воспроизведения:", e);
+//           playerStore.setPlaying(false);
+//         });
+//       return;
+//     }
 
-    playerStore.audioRef.src = track.track_file;
+//     playerStore.audioRef.removeEventListener("canplay", playerStore._onCanPlay);
 
-    const onCanPlay = () => {
-      playerStore.audioRef.play()
-        .then(() => {
-          playerStore.setPlaying(true);
-          playerStore.setCurrentTrack(track);
-          duration.value = playerStore.audioRef.duration || 0;
-        })
-        .catch((e) => {
-          console.error("Ошибка воспроизведения:", e);
-          playerStore.setPlaying(false);
-        });
+//     playerStore.audioRef.src = track.track_file;
 
-      playerStore.audioRef.removeEventListener("canplay", onCanPlay);
-      delete playerStore._onCanPlay;
-    };
+//     const onCanPlay = () => {
+//       playerStore.audioRef
+//         .play()
+//         .then(() => {
+//           playerStore.setPlaying(true);
+//           playerStore.setCurrentTrack(track);
+//           currentTrack.value = track;
+//           duration.value = playerStore.audioRef.duration || 0;
+//         })
+//         .catch((e) => {
+//           console.error("Ошибка воспроизведения:", e);
+//           playerStore.setPlaying(false);
+//         });
 
-    playerStore._onCanPlay = onCanPlay;
-    playerStore.audioRef.addEventListener("canplay", onCanPlay);
+//       playerStore.audioRef.removeEventListener("canplay", onCanPlay);
+//       delete playerStore._onCanPlay;
+//     };
 
-    playerStore.audioRef.load();
-  };
+//     playerStore._onCanPlay = onCanPlay;
+//     playerStore.audioRef.addEventListener("canplay", onCanPlay);
 
-  const play = () => {
-    if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
-      return;
-    }
+//     playerStore.audioRef.load();
+//   };
 
-    playerStore.audioRef.play()
-      .then(() => {
-        playerStore.setPlaying(true);
-      })
-      .catch((e) => {
-        console.error("Ошибка при попытке воспроизведения:", e);
-        playerStore.setPlaying(false);
-      });
-  };
+//   const play = () => {
+//     if (!playerStore.audioRef) {
+//       return;
+//     }
 
-  const pause = () => {
-    if (!playerStore.audioRef) {
-      console.error("Аудиоэлемент не инициализирован");
-      return;
-    }
+//     playerStore.audioRef
+//       .play()
+//       .then(() => {
+//         playerStore.setPlaying(true);
+//       })
+//       .catch((e) => {
+//         console.error("Ошибка при попытке воспроизведения:", e);
+//         playerStore.setPlaying(false);
+//       });
+//   };
 
-    try {
-      playerStore.audioRef.pause();
-      playerStore.setPlaying(false);
-    } catch (e) {
-      console.error("Ошибка при попытке поставить на паузу:", e);
-    }
-  };
+//   const pause = () => {
+//     if (!playerStore.audioRef) {
+//       return;
+//     }
 
-  const seekTo = (percentage) => {
-    if (!playerStore.audioRef) return;
-    const dur = playerStore.audioRef.duration;
-    if (isNaN(dur)) return;
-    playerStore.audioRef.currentTime = (percentage / 100) * dur;
-    playerStore.setProgress(percentage);
-  };
+//     try {
+//       playerStore.audioRef.pause();
+//       playerStore.setPlaying(false);
+//     } catch (e) {
+//       console.error("Ошибка при попытке поставить на паузу:", e);
+//     }
+//   };
 
-  const updateVolume = (event) => {
-    const volume = event.target.value;
-    playerStore.setVolume(volume);
-    if (playerStore.audioRef) {
-      playerStore.audioRef.volume = volume / 100;
-    }
-  };
+//   const seekTo = (percentage) => {
+//     if (!playerStore.audioRef) return;
+//     const dur = playerStore.audioRef.duration;
+//     if (isNaN(dur)) return;
+//     playerStore.audioRef.currentTime = (percentage / 100) * dur;
+//     playerStore.setProgress(percentage);
+//   };
 
-  const handleTimeUpdate = () => {
-    if (!playerStore.audioRef) return;
-    currentTime.value = playerStore.audioRef.currentTime;
-    duration.value = playerStore.audioRef.duration || 0;
+//   const updateVolume = (event) => {
+//     const volume = event.target.value;
+//     playerStore.setVolume(volume);
+//     if (playerStore.audioRef) {
+//       playerStore.audioRef.volume = volume / 100;
+//     }
+//   };
 
-    if (isNaN(duration.value) || duration.value === 0) return;
+//   const handleTimeUpdate = () => {
+//     if (!playerStore.audioRef) return;
+//     currentTime.value = playerStore.audioRef.currentTime;
+//     duration.value = playerStore.audioRef.duration || 0;
 
-    const progress = (currentTime.value / duration.value) * 100;
-    playerStore.setProgress(progress);
-  };
+//     if (isNaN(duration.value) || duration.value === 0) return;
 
-  const handleTrackEnd = () => {
-    console.log("Трек закончился");
+//     const progress = (currentTime.value / duration.value) * 100;
+//     playerStore.setProgress(progress);
+//   };
 
-    if (playerStore.isRepeat) {
-      playTrack(playerStore.currentTrack);
-    } else if (playerStore.hasNext) {
-      playerStore.playNext();
-    } else {
-      playerStore.setPlaying(false);
-    }
-  };
+//   const handleTrackEnd = () => {
+//     if (playerStore.isRepeat) {
+//       playTrack(playerStore.currentTrack);
+//     } else if (playerStore.hasNext) {
+//       playerStore.playNext();
+//       playTrack(playerStore.currentTrack);
+//     } else {
+//       playerStore.setPlaying(false);
+//     }
+//   };
 
-  watch(
-    () => playerStore.currentTrack,
-    (newTrack) => {
-      if (newTrack) {
-        console.log("currentTrack изменился, запускаем playTrack", newTrack);
-        playTrack(newTrack);
-      }
-    }
-  );
+//   watch(
+//     () => playerStore.currentTrack,
+//     (newTrack) => {
+//       if (newTrack) {
+//         currentTrack.value = newTrack;
+//       }
+//     }
+//   );
 
-  watch(
-  () => playerStore.currentTrack,
-  (newTrack) => {
-    if (newTrack) {
-      console.log("currentTrack изменился, запускаем playTrack", newTrack);
-      playTrack(newTrack);
-    }
-  }
-);
+//   watchEffect(() => {
+//     if (!playerStore.isPlaying && playerStore.audioRef) {
+//       playerStore.audioRef.pause();
+//     }
+//   });
 
-watch(
-  () => playerStore.isPlaying,
-  (isPlaying) => {
-    if (!playerStore.audioRef) return;
+//   const playNext = () => {
+//     const wasPlaying = playerStore.isPlaying;
+//     playerStore.playNext();
+//     if (wasPlaying) {
+//       playTrack(playerStore.currentTrack);
+//     }
+//   };
 
-    if (!isPlaying) {
-      playerStore.audioRef.pause();
-    }
-  }
-);
+//   const playPrev = () => {
+//     const wasPlaying = playerStore.isPlaying;
+//     playerStore.playPrev();
+//     if (wasPlaying) {
+//       playTrack(playerStore.currentTrack);
+//     }
+//   };
 
+//   const toggleRepeat = () => {
+//     playerStore.toggleRepeat();
+//   };
 
-  const playNext = () => {
-    playerStore.playNext();
-  };
+//   const toggleShuffle = () => {
+//     playerStore.toggleShuffle();
+//   };
 
-  const playPrev = () => {
-    playerStore.playPrev();
-  };
-
-  const toggleRepeat = () => {
-    playerStore.toggleRepeat();
-  };
-
-  const toggleShuffle = () => {
-    playerStore.toggleShuffle();
-  };
-
-  return {
-    initPlayer,
-    playTrack,
-    play,
-    pause,
-    seekTo,
-    updateVolume,
-    handleTimeUpdate,
-    handleTrackEnd,
-    playNext,
-    playPrev,
-    toggleRepeat,
-    toggleShuffle,
-    currentTime,
-    duration,
-  };
-}
+//   return {
+//     initPlayer,
+//     playTrack,
+//     play,
+//     pause,
+//     seekTo,
+//     updateVolume,
+//     handleTimeUpdate,
+//     handleTrackEnd,
+//     playNext,
+//     playPrev,
+//     toggleRepeat,
+//     toggleShuffle,
+//     currentTime,
+//     duration,
+//     currentTrack,
+//   };
+// }

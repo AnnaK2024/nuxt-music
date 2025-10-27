@@ -6,8 +6,8 @@
           class="bar__player-progress-line"
           :style="{ width: playerStore.progress + '%' }"
         />
-        <div class="bar__time current-time">{{ formattedCurrentTime }}</div>
-        <div class="bar__time total-time">{{ formattedDuration }}</div>
+        <div class="bar__time current-time">{{ playerStore.formattedCurrentTime }}</div>
+        <div class="bar__time total-time">{{ playerStore.formattedDuration }}</div>
       </div>
       <div class="bar__player-block">
         <div class="bar__player player">
@@ -70,6 +70,17 @@
                 }}</a>
               </div>
             </div>
+            <div class="track-play__like-dis">
+              <div
+                class="track-play__like _btn-icon"
+                :class="{ active: isLiked }"
+                @click="handleLike"
+              >
+                <svg class="track-play__like-svg">
+                  <use xlink:href="/icons/sprite.svg#icon-like" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
         <div class="bar__volume-block">
@@ -87,99 +98,98 @@
                 name="range"
                 min="0"
                 max="100"
-                @input="updateVolume"
+                @input="onVolumeInput"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <audio
-      ref="audioRef"
-      @timeupdate="handleTimeUpdate"
-      @ended="handleTrackEnd"
-    />
+    <audio ref="audioRef" @timeupdate="onTimeUpdate" @ended="onTrackEnd" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { usePlayerStore } from "~/stores/player";
-import { useAudioPlayer } from "~/composables/useAudioPlayer";
+import { useFavoritesStore } from "~/stores/favorites";
+
 
 const playerStore = usePlayerStore();
+const favoritesStore = useFavoritesStore();
 const audioRef = ref(null);
 
-const {
-  initPlayer,
-  playTrack,
-  pause,
-  play,
-  seekTo,
-  updateVolume,
-  handleTimeUpdate,
-  handleTrackEnd,
-  playNext,
-  playPrev,
-  toggleRepeat,
-  toggleShuffle,
-  currentTime,
-  duration,
-} = useAudioPlayer();
-
-onMounted(() => {
-  initPlayer(audioRef.value);
+onMounted(async () => {
+  playerStore.initAudio(audioRef.value);
 });
 
-const handlePlay = () => {
-  console.log("Текущий трек:", playerStore.currentTrack);
-  console.log("Плейлист:", playerStore.playlist);
+// <-- НОВОЕ: Computed-свойство для проверки, лайкнут ли текущий трек
+const isLiked = computed(() => {
+  if (!playerStore.currentTrack) return false; // Если трека нет, лайк невозможен
+  return favoritesStore.isFavorite(playerStore.currentTrack.id).value; // Используем метод из store
+});
 
+// <-- НОВОЕ: Обработчик клика на сердечке
+const handleLike = async () => {
   if (!playerStore.currentTrack) {
-    if (playerStore.playlist.length > 0) {
-      console.log("Запуск первого трека:", playerStore.playlist[0]);
-      playTrack(playerStore.playlist[0]);
-    } else {
-      console.log("Плейлист пуст");
-    }
-  } else {
-    if (playerStore.isPlaying) {
-      pause(); // ставим на паузу
-    } else {
-      // просто возобновляем воспроизведение без перезапуска трека
-      play();
-    }
+    console.warn("Нет текущего трека для лайка");
+    return;
+  }
+
+  try {
+    // Переключаем статус (добавляем или удаляем из избранного)
+    await favoritesStore.toggleFavorite(
+      playerStore.currentTrack.id,
+      playerStore.currentTrack
+    );
+    // После toggle, isLiked автоматически обновится благодаря реактивности
+  } catch (error) {
+    console.error("Ошибка при переключении лайка:", error);
+    // Здесь можно добавить уведомление пользователю, например, через toast или alert
   }
 };
 
+const handlePlay = () => {
+  if (playerStore.isPlaying) {
+    playerStore.pause(); // Если играет, ставим на паузу
+  } else {
+    // если нет currentTrack, ничего не делаем — трек должен быть установлен при клике на TrackItem
+    if (!playerStore.currentTrack && playerStore.playlist.length) {
+      playerStore.setCurrentTrackByIndex(0);
+    }
+    playerStore.play();
+  }
+};
 
+const handleNext = () => playerStore.playNext();
+const handlePrev = () => playerStore.playPrev();
+const handleRepeatToggle = () => playerStore.toggleRepeat();
+const handleShuffleToggle = () => playerStore.toggleShuffle();
+
+const onVolumeInput = () => {
+  // v-model уже обновляет playerStore.volume, но для безопасности вызываем сеттер
+  playerStore.setVolume(Number(playerStore.volume));
+};
+
+// progress click — высчитываем процент и делаем seek
 const handleProgressClick = (event) => {
-  const progressBar = event.currentTarget;
-  const clickPosition = event.offsetX;
-  const progressBarWidth = progressBar.offsetWidth;
-  const percentage = (clickPosition / progressBarWidth) * 100;
-  seekTo(percentage);
+  const bar = event.currentTarget;
+  const rect = bar.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const pct = (clickX / rect.width) * 100;
+  playerStore.seekToPercent(pct);
 };
 
-const formattedCurrentTime = computed(() => formatTime(currentTime.value));
-const formattedDuration = computed(() => formatTime(duration.value));
-
-const handleNext = () => {
-  playNext();
+// События audio — мы уже слушаем в сторе, но если composable не делает этого, синхронизируем:
+const onTimeUpdate = () => {
+  // playerStore обновляет progress через слушатель внутри initAudio; тут можно оставить пусто
+};
+const onTrackEnd = () => {
+  // тоже можно оставить пусто — лог handled в сторе
 };
 
-const handlePrev = () => {
-  playPrev();
-};
-
-const handleRepeatToggle = () => {
-  toggleRepeat();
-};
-
-const handleShuffleToggle = () => {
-  toggleShuffle();
-};
 </script>
+
 
 <style lang="scss" scoped>
 .bar {
@@ -363,6 +373,12 @@ const handleShuffleToggle = () => {
   stroke: #696969;
 }
 
+.player__btn-repeat.active .player__btn-repeat-svg,
+.player__btn-shuffle.active .player__btn-shuffle-svg {
+  fill: white !important;
+  color: white !important;
+}
+
 .player__track-play {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -467,6 +483,10 @@ const handleShuffleToggle = () => {
   height: 12px;
   fill: transparent;
   stroke: #696969;
+}
+
+.track-play__like.active .track-play__like-svg {
+  fill: #ad61ff;
 }
 
 .track-play__dislike {

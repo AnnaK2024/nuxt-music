@@ -1,7 +1,18 @@
 <template>
   <nav class="main__nav nav">
     <div class="nav__logo logo">
-      <img class="logo__image" src="/img/logo.png" alt="Логотип" />
+      <NuxtImg
+        class="logo__image"
+        src="/img/logo.png"
+        alt="Логотип"
+        :placeholder="[15]"
+        width="113.33px"
+        height="17px"
+        loading="eager"
+        quality="90"
+        format="webp"
+        preload
+      />
     </div>
     <div
       class="nav__burger burger"
@@ -19,13 +30,17 @@
     <div class="nav__menu menu" :class="{ 'menu--open': isMenuOpen }">
       <ul class="menu__list">
         <li class="menu__item">
-          <NuxtLink to="#" class="menu__link">Главное</NuxtLink>
+          <NuxtLink to="/" class="menu__link" @click="handleMainClick"
+            >Главное</NuxtLink
+          >
         </li>
         <li class="menu__item">
-          <NuxtLink to="#" class="menu__link">Мой плейлист</NuxtLink>
+          <NuxtLink to="/myFavoriteTracks" class="menu__link"
+            >Мой плейлист</NuxtLink
+          >
         </li>
         <li class="menu__item">
-          <NuxtLink to="#" class="menu__link">Войти</NuxtLink>
+          <NuxtLink to="#" class="menu__link" @click="logout">Выйти</NuxtLink>
         </li>
       </ul>
     </div>
@@ -34,11 +49,18 @@
 
 <script setup>
 import { ref } from "vue";
+import { useTracksStore } from "~/stores/tracks"; // Импорт твоего store (путь может быть ~/stores/tracks.js)
 
+const { logout } = useAuth(); // Предполагаю, что useAuth уже импортирован глобально
 const isMenuOpen = ref(false);
+const tracksStore = useTracksStore(); // Экземпляр store
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
+}
+
+function handleMainClick() {
+  tracksStore.clearFilters(); // Сброс всех фильтров через store
 }
 </script>
 

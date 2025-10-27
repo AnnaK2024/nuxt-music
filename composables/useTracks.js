@@ -6,10 +6,22 @@ export const useTracks = () => {
   const tracks = ref([]);
   const loading = ref(false);
   const error = ref(null);
+  const filter = ref("");
+
+  const filteredTracks = computed(() => {
+    if (!filter.value) return tracks.value;
+    return tracks.value.filter(
+      (track) =>
+        track.title.toLowerCase().includes(filter.value.toLowerCase()) ||
+        track.author.toLowerCase().includes(filter.value.toLowerCase())
+    );
+  });
 
   const fetchTracks = async () => {
     loading.value = true;
-    error.value = null;
+    if (error.value) {
+      console.error("Ошибка загрузки треков:", error.value);
+    }
     try {
       const response = await fetch(`${API_URL}/catalog/track/all/`);
       console.log("Ответ API:", response);
@@ -32,6 +44,8 @@ export const useTracks = () => {
     tracks,
     loading,
     error,
+    filter,
+    filteredTracks,
     fetchTracks,
   };
 };

@@ -6,6 +6,7 @@
           <svg class="track__title-svg">
             <use xlink:href="/icons/sprite.svg#icon-note" />
           </svg>
+          <div v-if="isCurrentTrack" class="pulse-dot" />
         </div>
         <div class="track__title-text">
           <a class="track__title-link" href="http:#">
@@ -21,27 +22,76 @@
         <a class="track__album-link" href="http:#">{{ track.album }}</a>
       </div>
       <div class="track__time">
-        <svg class="track__time-svg">
+        <svg
+          class="track__time-svg"
+          :class="{ 'track__time-svg--liked': isLiked }"
+          @click.stop="handleLike"
+        >
           <use xlink:href="/icons/sprite.svg#icon-like" />
         </svg>
-        <span class="track__time-text" />{{ formatTime(track.duration_in_seconds) }}
+        <span class="track__time-text">{{
+          formatTime(track.duration_in_seconds)
+        }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { toRef, computed } from "vue";
+import { useFavoritesStore } from "~/stores/favorites";
+import { usePlayerStore } from "~/stores/player";
+
 const props = defineProps({
-  track: {
-    type: Object,
-    required: true,
-  },
+  track: { type: Object, required: true },
+  index: { type: Number, required: true },
+  pageTracks: { type: Array, required: true },
 });
 
-const { playTrack } = useAudioPlayer();
+const track = toRef(props, "track");
+const index = toRef(props, "index");
+const pageTracks = toRef(props, "pageTracks");
+
+const favoritesStore = useFavoritesStore();
+const playerStore = usePlayerStore();
+
+// Проверяем, лайкнут ли уже трек
+const isLiked = computed(() => {
+  const id = track.value?.id;
+  if (id === undefined || id === null || id === "") return false;
+  return favoritesStore.isFavorite(id).value;
+});
+
+// Проверяем, является ли трек текущим
+const isCurrentTrack = computed(
+  () =>
+    !!(
+      playerStore.currentTrack &&
+      String(playerStore.currentTrack.id) === String(track.value.id)
+    )
+);
 
 const handleClick = () => {
-  playTrack(props.track);
+  // Устанавливаем весь массив страницы как плейлист и ставим текущий индекс
+  if (pageTracks.value && pageTracks.value.length) {
+    playerStore.setPlaylist(pageTracks.value, index.value);
+    playerStore.play();
+    return;
+  }
+
+  // fallback — проиграть один трек
+  playerStore.setPlaylist([track.value], 0);
+  playerStore.play();
+};
+
+const handleLike = async () => {
+  const id = track.value.id;
+  if (!id) return;
+  try {
+    await favoritesStore.toggleFavorite(id, track.value);
+  } catch (err) {
+    console.error("Ошибка при лайке:", err);
+  }
 };
 </script>
 
@@ -83,6 +133,7 @@ const handleClick = () => {
 }
 
 .track__title-image {
+  position: relative;
   width: 51px;
   height: 51px;
   padding: 16px;
@@ -104,6 +155,33 @@ const handleClick = () => {
   height: 17px;
   fill: transparent;
   stroke: #4e4e4e;
+  cursor: pointer;
+}
+
+.pulse-dot {
+  position: absolute;
+  top: 6px; /* подкорректируйте по дизайну */
+  right: 6px; /* подкорректируйте по дизайну */
+  width: 10px;
+  height: 10px;
+  background-color: #ad61ff;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .track__title-link {
@@ -159,8 +237,12 @@ const handleClick = () => {
   margin-right: 17px;
   fill: transparent;
   stroke: #696969;
+  transition: fill 0.2s ease;
 }
 
+.track__time-svg--liked {
+  fill: #ad61ff;
+}
 .track__time-text {
   font-style: normal;
   font-weight: 400;

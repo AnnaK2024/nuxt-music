@@ -1,8 +1,8 @@
 <template>
   <div class="main__sidebar sidebar">
     <div class="sidebar__personal">
-      <p class="sidebar__personal-name">Sergey.Ivanov</p>
-      <div class="sidebar__icon">
+      <p class="sidebar__personal-name">{{ userStore.username || "Гость" }}</p>
+      <div class="sidebar__icon" @click="userStore.logout">
         <svg>
           <use xlink:href="/icons/sprite.svg#logout" />
         </svg>
@@ -10,39 +10,37 @@
     </div>
     <div class="sidebar__block">
       <div class="sidebar__list">
-        <div class="sidebar__item">
-          <a class="sidebar__link" href="#">
-            <img
+        <div
+          v-for="playlist in playlists"
+          :key="playlist.id"
+          class="sidebar__item"
+        >
+          <nuxt-link class="sidebar__link" :to="`/categories/${playlist.id}`">
+            <NuxtImg
               class="sidebar__img"
-              src="/img/playlist01.png"
-              alt="day's playlist"
+              :src="playlist.image"
+              :alt="playlist.name"
+              :placeholder="[15]"
+              
             />
-          </a>
-        </div>
-        <div class="sidebar__item">
-          <a class="sidebar__link" href="#">
-            <img
-              class="sidebar__img"
-              src="/img/playlist02.png"
-              alt="day's playlist"
-            />
-          </a>
-        </div>
-        <div class="sidebar__item">
-          <a class="sidebar__link" href="#">
-            <img
-              class="sidebar__img"
-              src="/img/playlist03.png"
-              alt="day's playlist"
-            />
-          </a>
+          </nuxt-link>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { useUserStore } from "@/stores/user";
+
+const userStore = useUserStore();
+
+const playlists = [
+  { id: 2, name: "day's playlist", image: "/img/playlist01.png" },
+  { id: 3, name: "dance hits", image: "/img/playlist02.png" },
+  { id: 4, name: "indie charge", image: "/img/playlist03.png" },
+];
+</script>
 
 <style lang="scss" scoped>
 .main__sidebar {

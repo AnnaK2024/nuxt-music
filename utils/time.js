@@ -1,10 +1,10 @@
 export function formatTime(seconds) {
-  if (!seconds || isNaN(seconds)) return "00:00";
-  const mins = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const secs = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${mins}:${secs}`;
+  // Проверяем, что передан аргумент и что это число
+  if (typeof seconds !== "number" || isNaN(seconds) || seconds < 0) {
+    return "";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
