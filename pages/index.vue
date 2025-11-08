@@ -52,6 +52,10 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+useHead({
+  title: "Моя музыка | Skypro.Music"
+});
 </script>
 
 <style lang="scss" scoped>

@@ -39,6 +39,10 @@ onMounted(async () => {
     console.error("Ошибка загрузки:", error);
   }
 });
+
+useHead({
+  title: "Избранное | Skypro.Music"
+});
 </script>
 
 <style lang="scss" scoped>

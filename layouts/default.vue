@@ -25,15 +25,15 @@ const hiddenPaths = ['/login', '/signup']
 
 const showMain = computed(() => !hiddenPaths.includes(route.path))
 
-useHead({
-  title: "Моя музыка | Skypro.Music",
-  meta: [
-    { name: "description", content: "Ваши любимые треки в одном месте" },
-    { property: "og:title", content: "Моя музыка | Skypro Music" },
-    { property: "og:site_name", content: "Skypro Music" },
-    { name: "twitter:title", content: "Skypro Music — Моя музыка" },
-  ],
-});
+// useHead({
+//   title: "Моя музыка | Skypro.Music",
+//   meta: [
+//     { name: "description", content: "Ваши любимые треки в одном месте" },
+//     { property: "og:title", content: "Моя музыка | Skypro Music" },
+//     { property: "og:site_name", content: "Skypro Music" },
+//     { name: "twitter:title", content: "Skypro Music — Моя музыка" },
+//   ],
+// });
 </script>
 
 <style lang="scss" scoped>

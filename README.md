@@ -73,3 +73,12 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+
+Реализованы следующие функции
+Регистрация (sign up)
+Возможность залогиниться и разлогиниться (log in, sign out)
+Витрина с доступными треками
+Встроенный в приложение плеер (прослушивание музыки, постановка на паузу и снятие с нее, перемотка, повтор трека, shuffle плейлиста)
+Добавление трека в избранное
+Список подборок
