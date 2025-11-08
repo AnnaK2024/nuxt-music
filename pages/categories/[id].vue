@@ -45,43 +45,36 @@ import FilterControls from "~/components/FilterControls.vue";
 
 const route = useRoute();
 const tracksStore = useTracksStore();
-// const playerStore = usePlayerStore();
 
 const { tracks, categoryName, loading, error, fetchCategoryData } =
   useCategoryTracks();
 
-// computed-привязка для v-model к Pinia-стору (оставлено без изменений)
 const searchQuery = computed({
   get: () => tracksStore.filters.searchQuery,
   set: (val) => tracksStore.setFilters({ searchQuery: val }),
 });
 
-// Новый computed для фильтрации треков категории (адаптируй логику под свой store)
 const filteredTracks = computed(() => {
-  let filtered = tracks.value || []; // Начинаем с массива tracks
+  let filtered = tracks.value || [];
 
-  // Фильтр по автору
   if (tracksStore.filters.author) {
     filtered = filtered.filter(
       (track) => track.author === tracksStore.filters.author
     );
   }
 
-  // Фильтр по году
   if (tracksStore.filters.year) {
     filtered = filtered.filter(
       (track) => track.year === tracksStore.filters.year
     );
   }
 
-  // Фильтр по жанру
   if (tracksStore.filters.genre) {
     filtered = filtered.filter(
       (track) => track.genre === tracksStore.filters.genre
     );
   }
 
-  // Фильтр по поисковому запросу (по названию, автору, альбому — адаптируй под свои поля)
   if (tracksStore.filters.searchQuery) {
     const query = tracksStore.filters.searchQuery.toLowerCase();
     filtered = filtered.filter(
@@ -92,22 +85,19 @@ const filteredTracks = computed(() => {
     );
   }
 
-  // Фильтр по избранным (предполагаю, что у трека есть поле isFavorite или similar)
   if (tracksStore.filters.onlyFavorites) {
-    filtered = filtered.filter((track) => track.isFavorite); // Адаптируй под своё поле (например, track.favorite)
+    filtered = filtered.filter((track) => track.isFavorite);
   }
 
   return filtered;
 });
 
-// Обновление заголовка страницы при изменении названия категории
 watch(categoryName, (newName) => {
   useHead({
     title: `${newName || ""} | Skypro.Music`,
   });
 });
 
-// Загрузка данных при изменении ID категории
 watch(
   () => route.params.id,
   async (newId) => {

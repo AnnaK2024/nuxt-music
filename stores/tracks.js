@@ -46,7 +46,7 @@ export const useTracksStore = defineStore("tracks", {
       yearsArray.sort((a, b) => {
         if (a === "Неизвестно") return 1;
         if (b === "Неизвестно") return -1;
-        return b.localeCompare(a); // Сортировка по убыванию для годов
+        return b.localeCompare(a);
       });
       return yearsArray;
     },
@@ -73,10 +73,8 @@ export const useTracksStore = defineStore("tracks", {
     filteredTracks(state) {
       const query = state.filters.searchQuery.trim().toLowerCase();
 
-      // Всегда начинаем с полного списка треков
       let filteredList = state.tracks;
 
-      // Фильтр по поисковому запросу
       if (query) {
         filteredList = filteredList.filter((track) => {
           const title = String(track?.name || track?.title || "").toLowerCase();
@@ -90,7 +88,6 @@ export const useTracksStore = defineStore("tracks", {
         });
       }
 
-      // Фильтр по автору
       if (state.filters.author) {
         filteredList = filteredList.filter((track) => {
           const author = track?.author
@@ -100,7 +97,6 @@ export const useTracksStore = defineStore("tracks", {
         });
       }
 
-      // Фильтр по году
       if (state.filters.year) {
         filteredList = filteredList.filter(
           (track) =>
@@ -109,7 +105,6 @@ export const useTracksStore = defineStore("tracks", {
         );
       }
 
-      // Фильтр по жанру
       if (state.filters.genre) {
         const targetGenre = state.filters.genre;
         filteredList = filteredList.filter((track) => {
@@ -143,7 +138,6 @@ export const useTracksStore = defineStore("tracks", {
       this.errorMessage = null;
 
       try {
-        // Загружаем треки
         const response = await fetch(
           "https://webdev-music-003b5b991590.herokuapp.com/catalog/track/all/"
         );
@@ -152,12 +146,10 @@ export const useTracksStore = defineStore("tracks", {
         this.tracks = Array.isArray(json?.data) ? json.data : [];
 
         this.tracks = this.tracks.map((t, i) => {
-          // пробуем несколько полей, если их нет — генерируем уникальный fallback
           const chosen = t.id ?? t._id ?? t.trackId ?? `__generated_${i}`;
           return { ...t, id: chosen };
         });
 
-        // Загружаем подборку
         const selectionsResponse = await fetch(
           "https://webdev-music-003b5b991590.herokuapp.com/catalog/selection/all"
         );
@@ -176,7 +168,6 @@ export const useTracksStore = defineStore("tracks", {
     },
 
     setFilters(patch) {
-      // Создаем копию текущих фильтров
       const newFilters = { ...this.filters, ...patch };
 
       if (

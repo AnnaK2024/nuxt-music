@@ -1,8 +1,6 @@
 <template>
-  <!-- Пока данные загружаются, показываем скелетон -->
   <SkeletonPage v-if="loading" />
 
-  <!-- Когда загрузка завершена, показываем реальный контент -->
   <div v-else>
     <div class="centerblock__search search">
       <svg class="search__svg">
@@ -23,15 +21,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"; // Добавь ref
+import { ref, onMounted } from "vue";
 import { useTracksStore } from "~/stores/tracks";
 import { useFavoritesStore } from "~/stores/favorites";
-import SkeletonPage from "~/components/SkeletonPage.vue"; // Импортируй скелетон
+import SkeletonPage from "~/components/SkeletonPage.vue";
 
 const tracksStore = useTracksStore();
 const favoritesStore = useFavoritesStore();
 
-// Состояние загрузки: true по умолчанию
 const loading = ref(true);
 
 onMounted(async () => {
@@ -40,7 +37,7 @@ onMounted(async () => {
       tracksStore.loadTracks(),
       favoritesStore.loadFavorites(),
     ]);
-    // После загрузки отключаем скелетон
+
     loading.value = false;
   } catch (error) {
     console.error("Ошибка загрузки данных:", error);
@@ -48,13 +45,13 @@ onMounted(async () => {
       await navigateTo("/login");
       return;
     }
-    // Даже при ошибке отключаем скелетон (или покажи ошибку вместо него)
+
     loading.value = false;
   }
 });
 
 useHead({
-  title: "Моя музыка | Skypro.Music"
+  title: "Моя музыка | Skypro.Music",
 });
 </script>
 

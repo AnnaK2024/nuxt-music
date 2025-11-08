@@ -16,10 +16,9 @@ export function normalizeGenreName(genre) {
   return String(genre).toLowerCase().trim();
 }
 
-// Помощник — нормализовать трек и вернуть с валидным id
- export const normalizeTrack = (t, fallbackId = null, idx = 0) => {
-    const rawId = t?.id || t?._id || t?.trackId || fallbackId || `__generated_${idx}`;
-    const id = normalizeId(rawId) || `__generated_${idx}`;
-    return { ...t, id };
-  };
-
+export const normalizeTrack = (t, fallbackId = null, idx = 0) => {
+  const rawId =
+    t?.id || t?._id || t?.trackId || fallbackId || `__generated_${idx}`;
+  const id = normalizeId(rawId) || `__generated_${idx}`;
+  return { ...t, id };
+};

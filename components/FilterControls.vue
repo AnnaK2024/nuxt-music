@@ -190,14 +190,11 @@ const badgeCount = (kind) => {
   const filterValue = tracksStore.filters[kind];
 
   if (!filterValue) {
-    // Если фильтр не выбран - показываем общее количество доступных опций
     const availableKey = `available${
       kind.charAt(0).toUpperCase() + kind.slice(1)
     }s`;
     return tracksStore[availableKey]?.length || 0;
   } else {
-    // Если фильтр выбран - показываем количество треков, соответствующих фильтру
-    // Используем tracksStore.tracks вместо tracksStore.allTracks
     return tracksStore.tracks.filter((track) => {
       if (kind === "author") {
         const author = track?.author
@@ -251,39 +248,37 @@ const badgeCount = (kind) => {
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000; // чтобы быть поверх других элементов
-  background: #313131; // фон
+  z-index: 1000;
+  background: #313131;
   border-radius: 8px;
-  max-height: 200px; // ограничение по высоте
+  max-height: 200px;
   width: max-content;
   min-width: 150px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  padding: 8px; // внутренние отступы
-  display: none; // по умолчанию скрыт
+  padding: 8px;
+  display: none;
   flex-direction: column;
-  overflow: hidden; // чтобы не было скролла у контейнера
+  overflow: hidden;
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
 }
 
 .filter__wrapper .filter__dropdown.active {
-  display: flex; // показываем при активном состоянии
+  display: flex;
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
   margin-top: 15px;
 }
 
-/* Внутренний контейнер со списком и полосой прокрутки */
 .filter__dropdown-inner {
   display: flex;
   flex-direction: column;
-  max-height: 200px; // ограничение по высоте
-  overflow-y: auto; // вертикальная прокрутка
-  scrollbar-width: thin; // для Firefox
-  scrollbar-color: #ad61ff #2e2e2e; // для Firefox
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ad61ff #2e2e2e;
 }
 
-/* Для WebKit-браузеров */
 .filter__dropdown-inner::-webkit-scrollbar {
   width: 6px;
 }
@@ -299,12 +294,11 @@ const badgeCount = (kind) => {
   border: 2px solid #2e2e2e;
 }
 
-/* Стили для списка */
 .filter__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  flex: 1; // занимает всё доступное пространство
+  flex: 1;
 }
 
 .filter__item {
@@ -342,7 +336,7 @@ const badgeCount = (kind) => {
   padding: 6px 20px;
   display: flex;
   align-items: center;
-  position: relative; // Добавляем relative для позиционирования бейджа
+  position: relative;
 }
 
 .filter__button:not(:last-child) {
@@ -364,11 +358,11 @@ const badgeCount = (kind) => {
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  position: absolute; // Меняем на absolute
-  top: -8px; // Позиционируем сверху
-  right: -8px; // Позиционируем справа
+  position: absolute;
+  top: -8px;
+  right: -8px;
   flex-shrink: 0;
-  z-index: 1; // Чтобы был поверх других элементов
+  z-index: 1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -407,7 +401,6 @@ const badgeCount = (kind) => {
   cursor: pointer;
 }
 
-/* Стили для выбранного фильтра (изменение "таба") */
 .filter__button.selected {
   border-color: #ad61ff;
   color: #ad61ff;

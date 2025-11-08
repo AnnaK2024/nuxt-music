@@ -56,12 +56,10 @@ const pageTracks = toRef(props, "pageTracks");
 const favoritesStore = useFavoritesStore();
 const playerStore = usePlayerStore();
 
-// ✨ ИСПРАВЛЕНО: Приоритет на _id
 const getTrackId = (t) => {
   return t?._id || t?.id || t?.trackId || t?.track_id || null;
 };
 
-// ✅ Определяем контекст страницы по имени маршрута
 const getPageContext = () => {
   const routeName = route.name;
 
@@ -72,14 +70,12 @@ const getPageContext = () => {
   return "main";
 };
 
-// Проверяем, лайкнут ли уже трек
 const isLiked = computed(() => {
   const id = getTrackId(track.value);
   if (!id) return false;
   return favoritesStore.isFavorite(id).value;
 });
 
-// Проверяем, является ли трек текущим
 const isCurrentTrack = computed(() => {
   const trackId = getTrackId(track.value);
   const currentTrackId = getTrackId(playerStore.currentTrack);
@@ -88,7 +84,6 @@ const isCurrentTrack = computed(() => {
   return String(trackId) === String(currentTrackId);
 });
 
-// ✅ Обработка клика по треку
 const handleClick = () => {
   const trackId = getTrackId(track.value);
 
@@ -105,17 +100,13 @@ const handleClick = () => {
     return;
   }
 
-  // 1. Устанавливаем плейлист
   playerStore.setPlaylist(pageTracks.value, getPageContext());
 
-  // 2. Устанавливаем текущий трек
   playerStore.setCurrentTrack(track.value);
 
-  // 3. Начинаем воспроизведение
   playerStore.play();
 };
 
-// ✅ Обработка клика по лайку
 const handleLike = async () => {
   const id = getTrackId(track.value);
   if (!id) {
@@ -195,8 +186,8 @@ const handleLike = async () => {
 
 .pulse-dot {
   position: absolute;
-  top: 6px; /* подкорректируйте по дизайну */
-  right: 6px; /* подкорректируйте по дизайну */
+  top: 6px;
+  right: 6px;
   width: 10px;
   height: 10px;
   background-color: #ad61ff;

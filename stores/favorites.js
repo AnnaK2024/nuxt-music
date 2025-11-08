@@ -22,7 +22,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
   });
   const { fetchWithAuth } = useAuth();
 
-  // Получаем boolean computed по id
   const isFavorite = (trackId) => {
     const id = normalizeId(trackId);
     return computed(() =>
@@ -95,7 +94,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
     const query = filters.value.searchQuery.trim().toLowerCase();
     let filteredList = favorites.value;
 
-    // Фильтр по поиску
     if (query) {
       filteredList = filteredList.filter((track) => {
         const title = String(track?.name || track?.title || "").toLowerCase();
@@ -109,7 +107,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
       });
     }
 
-    // Фильтр по автору
     if (filters.value.author) {
       filteredList = filteredList.filter((track) => {
         const author = track?.author
@@ -119,7 +116,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
       });
     }
 
-    // Фильтр по году
     if (filters.value.year) {
       filteredList = filteredList.filter(
         (track) =>
@@ -127,7 +123,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
       );
     }
 
-    // Фильтр по жанру
     if (filters.value.genre) {
       const targetGenre = filters.value.genre;
       filteredList = filteredList.filter((track) => {
@@ -143,18 +138,16 @@ export const useFavoritesStore = defineStore("favorites", () => {
 
   const favoriteTracks = computed(() => filteredFavorites.value);
 
-  // Нормализовать массив ответа и вернуть массив треков
   const normalizeResponseToArray = (resp) => {
     if (!resp) return [];
     if (Array.isArray(resp)) return resp;
     if (Array.isArray(resp?.data)) return resp.data;
-    // Если пришёл объект с полем data — возвращаем либо data, либо сам объект как элемент массива
+
     if (resp?.data && !Array.isArray(resp.data)) return [resp.data];
-    // Если это одиночный трек — поместим его в массив
+
     return [resp];
   };
 
-  // Загрузка избранного с сервера
   async function loadFavorites() {
     if (isLoading.value) return;
     isLoading.value = true;
@@ -196,7 +189,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
     }
   }
 
-  // Добавление трека в избранное
   async function addFavorite(trackId, trackData = null) {
     const id = normalizeId(trackId);
     if (!id || id === "") {
@@ -222,9 +214,7 @@ export const useFavoritesStore = defineStore("favorites", () => {
       const data = await response.json();
       console.log(`Трек ${id} добавлен в избранное:`, data);
 
-      // Если передали trackData — обработаем его безопасно
       if (trackData) {
-        // Если передали массив треков — добавим поэлементно
         if (Array.isArray(trackData)) {
           trackData.forEach((t, i) => {
             const normalized = normalizeTrack(t, id, i);
@@ -240,16 +230,14 @@ export const useFavoritesStore = defineStore("favorites", () => {
           );
           if (!exists) favorites.value.push(normalized);
         } else {
-          // Неподдерживаемый тип trackData — игнорируем и попытаемся использовать ответ сервера
           console.warn(
             "addFavorite: unsupported trackData type",
             typeof trackData
           );
         }
       } else {
-        // Если trackData не передан — используем ответ сервера
         const respArr = normalizeResponseToArray(data);
-        // Если сервер вернул весь список — заменим локально (без дубликатов)
+
         if (Array.isArray(respArr) && respArr.length > 1) {
           favorites.value = respArr.map((t, i) => normalizeTrack(t, null, i));
         } else if (respArr.length === 1) {
@@ -271,7 +259,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
     }
   }
 
-  // Удаление из избранного
   async function removeFavorite(trackId) {
     const id = normalizeId(trackId);
     if (!id || id === "") {
@@ -296,7 +283,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
       const data = await response.json();
       console.log(`Трек ${id} удалён из избранного:`, data);
 
-      // Локально удаляем
       favorites.value = favorites.value.filter((f) => normalizeId(f.id) !== id);
       errorMessage.value = null;
       return data;
@@ -308,7 +294,6 @@ export const useFavoritesStore = defineStore("favorites", () => {
     }
   }
 
-  // Toggle: добавляет или удаляет на основе текущего состояния
   async function toggleFavorite(trackId, trackData = null) {
     const id = normalizeId(trackId);
     if (!id) throw new Error("Invalid track id in toggleFavorite");
@@ -333,9 +318,9 @@ export const useFavoritesStore = defineStore("favorites", () => {
     availableAuthors,
     availableYears,
     availableGenres,
-    filteredFavorites, 
+    filteredFavorites,
     favoriteTracks,
-    setFilters, 
+    setFilters,
     clearFilters,
     loadFavorites,
     addFavorite,

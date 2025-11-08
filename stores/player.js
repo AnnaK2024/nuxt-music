@@ -69,20 +69,17 @@ export const usePlayerStore = defineStore("player", {
   },
 
   actions: {
-    // ✨ ИСПРАВЛЕНО: Приоритет на _id
     _getTrackId(track) {
       return (
         track?._id || track?.id || track?.trackId || track?.track_id || null
       );
     },
 
-    // ✨ Сравнить ID
     _compareIds(id1, id2) {
       if (!id1 || !id2) return false;
       return String(id1) === String(id2);
     },
 
-    // ✨ Получить URL трека
     _getTrackSrc(track) {
       return (
         track?.url ||
@@ -147,7 +144,6 @@ export const usePlayerStore = defineStore("player", {
       }
     },
 
-    // ✅ Установка плейлиста
     setPlaylist(tracks, context = null) {
       this.playlist = tracks || [];
       this.playlistContext = context;
@@ -158,7 +154,6 @@ export const usePlayerStore = defineStore("player", {
         currentTrackId: this._getTrackId(this.currentTrack),
       });
 
-      // ✅ Если текущий трек не в новом плейлисте, очищаем его
       const currentTrackId = this._getTrackId(this.currentTrack);
       if (
         this.currentTrack &&
@@ -175,14 +170,12 @@ export const usePlayerStore = defineStore("player", {
       }
     },
 
-    // ✨ Установка текущего трека и начало воспроизведения
     playTrack(track) {
       if (!track) return;
       this.setCurrentTrack(track);
       this.play();
     },
 
-    // ✅ Установка текущего трека без воспроизведения
     setCurrentTrack(track) {
       if (!track) {
         this.currentTrack = null;
@@ -223,7 +216,6 @@ export const usePlayerStore = defineStore("player", {
       });
     },
 
-    // ✅ Установить текущий трек по индексу в playlist
     setCurrentTrackByIndex(index) {
       if (!this.playlist.length) {
         this.currentTrack = null;

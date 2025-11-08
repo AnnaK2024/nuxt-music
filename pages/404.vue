@@ -288,7 +288,7 @@ useHead({
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #181818; /* тёмный фон */
+  background-color: #181818;
   color: #fff;
   text-align: center;
   padding: 0 20px;
@@ -325,7 +325,7 @@ useHead({
 
 .btn {
   margin-top: 2rem;
-  background-color: #5c2e91; /* фиолетовый */
+  background-color: #5c2e91;
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 4px;

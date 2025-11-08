@@ -1,5 +1,4 @@
 export function formatTime(seconds) {
-  // Проверяем, что передан аргумент и что это число
   if (typeof seconds !== "number" || isNaN(seconds) || seconds < 0) {
     return "";
   }

@@ -111,7 +111,6 @@
             </div>
           </div>
         </div>
-        
       </div>
     </Transition>
     <audio ref="audioRef" @timeupdate="onTimeUpdate" @ended="onTrackEnd" />
@@ -131,13 +130,11 @@ onMounted(async () => {
   playerStore.initAudio(audioRef.value);
 });
 
-// Computed-свойство для проверки, лайкнут ли текущий трек
 const isLiked = computed(() => {
   if (!playerStore.currentTrack) return false;
   return favoritesStore.isFavorite(playerStore.currentTrack.id).value;
 });
 
-// Обработчик клика на сердечке
 const handleLike = async () => {
   if (!playerStore.currentTrack) {
     console.warn("Нет текущего трека для лайка");
@@ -182,13 +179,9 @@ const handleProgressClick = (event) => {
   playerStore.seekToPercent(pct);
 };
 
-const onTimeUpdate = () => {
-  // playerStore обновляет progress через слушатель внутри initAudio
-};
+const onTimeUpdate = () => {};
 
-const onTrackEnd = () => {
-  // обработка конца трека в сторе
-};
+const onTrackEnd = () => {};
 </script>
 
 <style lang="scss" scoped>

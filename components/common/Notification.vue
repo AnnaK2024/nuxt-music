@@ -1,5 +1,5 @@
 <template>
-//указываем, куда нужно вставить компонент
+  //указываем, куда нужно вставить компонент
   <Teleport to="body">
     <Transition name="notification">
       <div v-if="show" class="notification" :class="type">

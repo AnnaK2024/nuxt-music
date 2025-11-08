@@ -45,16 +45,13 @@ const props = defineProps({
   tracks: { type: Array, default: null },
 });
 
-// локальный стор (если нужен для загрузки/фильтрации)
 const tracksStore = useTracksStore();
 const loading = computed(() => tracksStore.isLoading);
 const error = computed(() => tracksStore.errorMessage);
 
-// Если проп tracks передали — используем его; иначе — используем tracksStore.filteredTracks
 const localTracks = computed(() => props.tracks ?? tracksStore.filteredTracks);
 
 onMounted(() => {
-  // Загружаем все треки только если не передали props.tracks
   if (!props.tracks) {
     tracksStore.loadTracks();
   }

@@ -34,7 +34,7 @@ describe("Player Store - Getters (чистые функции)", () => {
         { id: "1", name: "Track 1", url: "url1" },
         { id: "2", name: "Track 2", url: "url2" },
       ];
-      store.currentTrack = store.playlist[1]; // последний трек
+      store.currentTrack = store.playlist[1];
       store.isRepeatPlaylist = true;
 
       expect(store.hasNext).toBe(true);
@@ -424,8 +424,8 @@ describe("Player Store - Actions (чистые функции без побоч�
 
       store.seekToPercent(50);
 
-      expect(mockAudio.currentTime).toBe(0); // ← Было 0, осталось 0
-      expect(store.progress).toBe(0); // ← Было 0, осталось 0
+      expect(mockAudio.currentTime).toBe(0);
+      expect(store.progress).toBe(0);
     });
   });
 });

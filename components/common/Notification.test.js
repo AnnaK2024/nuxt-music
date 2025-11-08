@@ -12,8 +12,8 @@ describe("Notification", () => {
       },
       global: {
         stubs: {
-          Teleport: true, // отключаем реальный teleport
-          Transition: false, // чтобы элемент отрендерился сразу
+          Teleport: true,
+          Transition: false,
         },
       },
     });

@@ -14,26 +14,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 import NavBar from "~/components/NavBar.vue";
 import PlayerBar from "~/components/PlayerBar.vue";
 import SideBar from "~/components/SideBar.vue";
 
-const route = useRoute()
+const route = useRoute();
 
-const hiddenPaths = ['/login', '/signup']
+const hiddenPaths = ["/login", "/signup"];
 
-const showMain = computed(() => !hiddenPaths.includes(route.path))
-
-// useHead({
-//   title: "Моя музыка | Skypro.Music",
-//   meta: [
-//     { name: "description", content: "Ваши любимые треки в одном месте" },
-//     { property: "og:title", content: "Моя музыка | Skypro Music" },
-//     { property: "og:site_name", content: "Skypro Music" },
-//     { name: "twitter:title", content: "Skypro Music — Моя музыка" },
-//   ],
-// });
+const showMain = computed(() => !hiddenPaths.includes(route.path));
 </script>
 
 <style lang="scss" scoped>

@@ -1,24 +1,20 @@
 <template>
   <div class="skeleton-page">
-    <!-- Хедер -->
     <div class="skeleton-header">
       <div class="skeleton-logo"></div>
       <div class="skeleton-title"></div>
       <div class="skeleton-search-icon"></div>
     </div>
 
-    <!-- Поисковая строка -->
     <div class="skeleton-search-bar">
       <div class="skeleton-search-input"></div>
     </div>
 
-    <!-- Кнопки -->
     <div class="skeleton-buttons">
       <div class="skeleton-button"></div>
       <div class="skeleton-button small"></div>
     </div>
 
-    <!-- Список треков -->
     <div class="skeleton-playlist">
       <div v-for="n in 20" :key="n" class="skeleton-track">
         <div class="skeleton-cover"></div>
@@ -34,11 +30,11 @@
 
 <style scoped>
 .skeleton-page {
-  background-color: #181818; /* Тёмный фон, как в Spotify */
+  background-color: #181818;
   color: #fff;
   padding: 20px;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .skeleton-header {
@@ -58,7 +54,7 @@
 
 .skeleton-title {
   height: 24px;
-  width: 80px; /* Для "Треки" */
+  width: 80px;
   background-color: #404040;
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
@@ -69,7 +65,7 @@
   width: 24px;
   height: 24px;
   background-color: #404040;
-  border-radius: 50%; /* Круг для иконки поиска */
+  border-radius: 50%;
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -80,7 +76,7 @@
 .skeleton-search-input {
   height: 40px;
   background-color: #404040;
-  border-radius: 20px; /* Закруглённый поиск */
+  border-radius: 20px;
   animation: pulse 1.5s ease-in-out infinite;
   padding: 0 15px;
 }
@@ -93,14 +89,14 @@
 
 .skeleton-button {
   height: 32px;
-  width: 120px; /* Для "Слушать дальше" */
+  width: 120px;
   background-color: #404040;
   border-radius: 20px;
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 .skeleton-button.small {
-  width: 80px; /* Для другой кнопки, если есть */
+  width: 80px;
 }
 
 .skeleton-playlist {
@@ -118,7 +114,7 @@
 .skeleton-cover {
   width: 50px;
   height: 50px;
-  background-color: #404040; /* Серый квадратик для обложки */
+  background-color: #404040;
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
   margin-right: 15px;
@@ -130,7 +126,7 @@
 
 .skeleton-title-line {
   height: 16px;
-  width: 200px; /* Длинная заглушка для названия */
+  width: 200px;
   background-color: #404040;
   border-radius: 4px;
   margin-bottom: 4px;
@@ -139,7 +135,7 @@
 
 .skeleton-artist-line {
   height: 14px;
-  width: 150px; /* Короткая для артиста */
+  width: 150px;
   background-color: #404040;
   border-radius: 4px;
   animation: pulse 1.5s ease-in-out infinite;
@@ -155,7 +151,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

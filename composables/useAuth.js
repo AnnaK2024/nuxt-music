@@ -9,7 +9,7 @@ export function useAuth() {
 
   const loading = ref(false);
   const error = ref(null);
-  let refreshPromise = null; // Флаг для предотвращения двойного обновления
+  let refreshPromise = null;
 
   function getAccessToken() {
     return localStorage.getItem("access_token");
@@ -31,7 +31,6 @@ export function useAuth() {
     error.value = null;
 
     try {
-      // Шаг 1: Проверяем пользователя и получаем его данные через /user/login/
       const loginRes = await fetch(`${API_URL}/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,7 +44,6 @@ export function useAuth() {
 
       const userData = await loginRes.json();
 
-      // Шаг 2: Получаем токены через /user/token/
       const tokenRes = await fetch(`${API_URL}/token/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,13 +56,12 @@ export function useAuth() {
       }
 
       const tokenData = await tokenRes.json();
-      setTokens(tokenData); // Сохраняем access и refresh токены
+      setTokens(tokenData);
 
-      // Обновляем store пользователя с данными из /user/login/
       userStore.setUser({
         username: userData.username,
         email: userData.email,
-        id: userData._id, // API возвращает _id, используем как id
+        id: userData._id,
       });
 
       await router.push("/");
@@ -92,7 +89,6 @@ export function useAuth() {
         throw new Error(err.message || "Ошибка регистрации");
       }
 
-      // После успешной регистрации перенаправляем на логин
       await router.push("/login");
     } catch (e) {
       error.value = e.message;
@@ -108,12 +104,10 @@ export function useAuth() {
     router.push("/login");
   }
 
-  // Обновление токена с защитой от двойного запроса
   async function refreshAccessToken() {
     const refresh = getRefreshToken();
     if (!refresh) throw new Error("Нет refresh токена");
 
-    // Если уже идет обновление, ждем результат
     if (refreshPromise) return refreshPromise;
 
     refreshPromise = (async () => {
@@ -146,15 +140,13 @@ export function useAuth() {
 
     if (!options.headers) options.headers = {};
     options.headers["Content-Type"] = "application/json";
-    
-    // ВСЕГДА добавляем токен если он есть
+
     if (accessToken) {
       options.headers["Authorization"] = `Bearer ${accessToken}`;
     }
 
     let res = await fetch(url, options);
 
-    // Обработка 401 с повторным обновлением токена
     if (res.status === 401 && getRefreshToken()) {
       try {
         accessToken = await refreshAccessToken();
@@ -166,7 +158,6 @@ export function useAuth() {
         throw new Error("Сессия истекла, требуется вход");
       }
     } else if (res.status === 401) {
-      // Если нет refresh токена — выходим
       logout();
       throw new Error("Требуется аутентификация");
     }

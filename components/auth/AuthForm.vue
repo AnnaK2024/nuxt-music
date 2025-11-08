@@ -75,7 +75,6 @@
             }}
           </button>
 
-          <!-- Показываем ссылку‑кнопку только в режиме логина -->
           <NuxtLink
             v-if="!isRegistration"
             class="modal__btn-switch"
@@ -136,10 +135,10 @@ const handleSubmit = async () => {
         username: username.value,
       });
       alert("Регистрация успешна, войдите в систему");
-      router.push("/login"); // Перенаправляем на вход после регистрации
+      router.push("/login");
     } else {
       await login({ email: email.value, password: password.value });
-      router.push("/"); // Перенаправляем после успешного входа
+      router.push("/");
     }
   } catch (e) {
     alert(e.message);
@@ -253,7 +252,7 @@ const handleSubmit = async () => {
 .modal__btn {
   width: 278px;
   height: 62px;
-  background-color: #580ea2; /* фиолетовый */
+  background-color: #580ea2;
   border-radius: 6px;
   border: none;
 
@@ -270,22 +269,21 @@ const handleSubmit = async () => {
 }
 
 .modal__btn:hover {
-  background-color: #3f007d; /* темнее фиолетового */
+  background-color: #3f007d;
 }
 
 .modal__btn:active {
-  background-color: #271a58; /* ещё темнее при нажатии */
+  background-color: #271a58;
 }
 
-/* Кнопка переключения — белая с границей и черным текстом */
 .modal__btn-switch {
   width: 278px;
   height: 62px;
-  background-color: #ffffff; /* белый фон */
-  border: 1px solid #d0cece; /* светло-серая рамка */
+  background-color: #ffffff;
+  border: 1px solid #d0cece;
   border-radius: 6px;
   margin-top: 20px;
-  color: #000000; /* чёрный текст */
+  color: #000000;
   font-weight: 400;
   font-size: 18px;
   line-height: 24px;
@@ -294,42 +292,39 @@ const handleSubmit = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none; /* убрать подчёркивание */
+  text-decoration: none;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .modal__btn-switch:hover {
-  background-color: #f4f5f6; /* светло-серый фон */
-  border-color: #bfbfbf; /* чуть темнее рамка */
+  background-color: #f4f5f6;
+  border-color: #bfbfbf;
 }
 
 .modal__btn-switch:active {
-  background-color: #d9d9d9; /* серый фон */
-  border-color: #a6a6a6; /* темнее рамка */
+  background-color: #d9d9d9;
+  border-color: #a6a6a6;
 }
 
-/* Стили для кнопки "Войти" (в окне входа) */
 .modal__btn--login {
-  background-color: #580ea2; /* Синий цвет для входа */
+  background-color: #580ea2;
   color: white;
   margin-top: 30px;
 }
 
 .modal__btn--login:hover {
-  background-color: #3f007d; /* Темнее при наведении */
+  background-color: #3f007d;
 }
 
-/* Стили для кнопки "Зарегистрироваться" (в окне регистрации) */
 .modal__btn--register {
-  background-color: #580ea2; /* Зеленый цвет для регистрации */
+  background-color: #580ea2;
   color: white;
 }
 
 .modal__btn--register:hover {
-  background-color: #3f007d; /* Темнее при наведении */
+  background-color: #3f007d;
 }
 
-/* Отключенное состояние (для обеих кнопок) */
 .modal__btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;

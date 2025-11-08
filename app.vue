@@ -17,10 +17,9 @@ onMounted(() => {
   const username = localStorage.getItem("username");
 
   if (accessToken && username) {
-    // Восстанавливаем данные пользователя из localStorage (username, email, id)
     userStore.loadFromStorage();
   } else {
-    logout(); // очищаем store и localStorage, перенаправляем на логин
+    logout();
   }
 });
 </script>

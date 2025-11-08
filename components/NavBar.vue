@@ -49,18 +49,18 @@
 
 <script setup>
 import { ref } from "vue";
-import { useTracksStore } from "~/stores/tracks"; // Импорт твоего store (путь может быть ~/stores/tracks.js)
+import { useTracksStore } from "~/stores/tracks";
 
-const { logout } = useAuth(); // Предполагаю, что useAuth уже импортирован глобально
+const { logout } = useAuth();
 const isMenuOpen = ref(false);
-const tracksStore = useTracksStore(); // Экземпляр store
+const tracksStore = useTracksStore();
 
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value;
 }
 
 function handleMainClick() {
-  tracksStore.clearFilters(); // Сброс всех фильтров через store
+  tracksStore.clearFilters();
 }
 </script>
 
