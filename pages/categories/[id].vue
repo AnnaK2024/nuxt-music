@@ -204,6 +204,6 @@ watch(
   text-align: center;
   padding: 20px;
   color: #666;
-  font-size: 16px;
+  font-size: 30px;
 }
 </style>
