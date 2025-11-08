@@ -5,10 +5,19 @@
     <div class="filter__wrapper">
       <div
         class="filter__button button-author _btn-text"
-        :class="{ active: activeDropdown === 'author' }"
+        :class="{
+          active: activeDropdown === 'author',
+          selected: !!tracksStore.filters.author,
+        }"
         @click="toggleDropdown('author')"
       >
-        исполнителю
+        <span class="filter__button-text">исполнителю</span>
+        <span
+          v-show="activeDropdown === 'author' || !!tracksStore.filters.author"
+          class="filter__badge"
+        >
+          {{ badgeCount("author") || 0 }}
+        </span>
       </div>
 
       <div
@@ -22,6 +31,7 @@
               v-for="author in tracksStore.availableAuthors"
               :key="author"
               class="filter__item"
+              :class="{ 'filter__item--active': isActive('author', author) }"
               @click="selectFilterValue('author', author)"
             >
               {{ author }}
@@ -34,10 +44,19 @@
     <div class="filter__wrapper">
       <div
         class="filter__button button-year _btn-text"
-        :class="{ active: activeDropdown === 'year' }"
+        :class="{
+          active: activeDropdown === 'year',
+          selected: !!tracksStore.filters.year,
+        }"
         @click="toggleDropdown('year')"
       >
-        году выпуска
+        <span class="filter__button-text">году выпуска</span>
+        <span
+          v-show="activeDropdown === 'year' || !!tracksStore.filters.year"
+          class="filter__badge"
+        >
+          {{ badgeCount("year") || 0 }}
+        </span>
       </div>
 
       <div
@@ -51,6 +70,7 @@
               v-for="year in tracksStore.availableYears"
               :key="year"
               class="filter__item"
+              :class="{ 'filter__item--active': isActive('year', year) }"
               @click="selectFilterValue('year', year)"
             >
               {{ year }}
@@ -63,10 +83,19 @@
     <div class="filter__wrapper">
       <div
         class="filter__button button-genre _btn-text"
-        :class="{ active: activeDropdown === 'genre' }"
+        :class="{
+          active: activeDropdown === 'genre',
+          selected: !!tracksStore.filters.genre,
+        }"
         @click="toggleDropdown('genre')"
       >
-        жанру
+        <span class="filter__button-text">жанру</span>
+        <span
+          v-show="activeDropdown === 'genre' || !!tracksStore.filters.genre"
+          class="filter__badge"
+        >
+          {{ badgeCount("genre") || 0 }}
+        </span>
       </div>
 
       <div
@@ -80,6 +109,7 @@
               v-for="genre in tracksStore.availableGenres"
               :key="genre"
               class="filter__item"
+              :class="{ 'filter__item--active': isActive('genre', genre) }"
               @click="selectFilterValue('genre', genre)"
             >
               {{ genre }}
@@ -146,6 +176,50 @@ function selectFilterValue(kind, value) {
 
   activeDropdown.value = null;
 }
+
+const isActive = (kind, value) => {
+  const current = tracksStore.filters[kind];
+  if (!current) return false;
+
+  const normalizedValue =
+    kind === "genre" ? String(value).toLowerCase().trim() : String(value);
+  return String(current) === normalizedValue;
+};
+
+const badgeCount = (kind) => {
+  const filterValue = tracksStore.filters[kind];
+
+  if (!filterValue) {
+    // Если фильтр не выбран - показываем общее количество доступных опций
+    const availableKey = `available${
+      kind.charAt(0).toUpperCase() + kind.slice(1)
+    }s`;
+    return tracksStore[availableKey]?.length || 0;
+  } else {
+    // Если фильтр выбран - показываем количество треков, соответствующих фильтру
+    // Используем tracksStore.tracks вместо tracksStore.allTracks
+    return tracksStore.tracks.filter((track) => {
+      if (kind === "author") {
+        const author = track?.author
+          ? String(track.author).trim()
+          : "Неизвестно";
+        return author === filterValue;
+      }
+      if (kind === "year") {
+        const year = extractYearFromReleaseDate(track?.release_date);
+        return year === filterValue;
+      }
+      if (kind === "genre") {
+        const targetGenre = filterValue;
+        if (Array.isArray(track?.genre)) {
+          return track.genre.some((g) => normalizeGenreName(g) === targetGenre);
+        }
+        return normalizeGenreName(track?.genre) === targetGenre;
+      }
+      return false;
+    }).length;
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -237,11 +311,25 @@ function selectFilterValue(kind, value) {
   padding: 8px 20px;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
 }
 
 .filter__item:hover {
   color: #b672ff;
   text-decoration: underline;
+}
+
+.filter__item--active {
+  color: #ad61ff;
+  font-weight: 600;
+  background-color: rgba(173, 97, 255, 0.1);
+  border-radius: 4px;
+}
+
+.filter__item--active:hover {
+  color: #ad61ff;
+  text-decoration: none;
+  background-color: rgba(173, 97, 255, 0.2);
 }
 
 .filter__button {
@@ -252,15 +340,46 @@ function selectFilterValue(kind, value) {
   border: 1px solid #ffffff;
   border-radius: 60px;
   padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  position: relative; // Добавляем relative для позиционирования бейджа
 }
 
 .filter__button:not(:last-child) {
   margin-right: 10px;
 }
+
+.filter__button-text {
+  flex: 1;
+}
+
+.filter__badge {
+  background: #ad61ff;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  position: absolute; // Меняем на absolute
+  top: -8px; // Позиционируем сверху
+  right: -8px; // Позиционируем справа
+  flex-shrink: 0;
+  z-index: 1; // Чтобы был поверх других элементов
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 ._btn-text:hover {
   border-color: #b672ff;
   color: #b672ff;
   cursor: pointer;
+}
+
+._btn-text:hover .filter__badge {
+  background: #b672ff;
 }
 
 ._btn-icon:hover svg {
@@ -286,5 +405,23 @@ function selectFilterValue(kind, value) {
   fill: #696969;
   stroke: #ffffff;
   cursor: pointer;
+}
+
+/* Стили для выбранного фильтра (изменение "таба") */
+.filter__button.selected {
+  border-color: #ad61ff;
+  color: #ad61ff;
+  background-color: rgba(173, 97, 255, 0.1);
+}
+
+.filter__button.selected:hover {
+  border-color: #b672ff;
+  color: #b672ff;
+  background-color: rgba(182, 114, 255, 0.1);
+}
+
+.filter__button.selected .filter__badge {
+  background: #b672ff;
+  color: #ffffff;
 }
 </style>
