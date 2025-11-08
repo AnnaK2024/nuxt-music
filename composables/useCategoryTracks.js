@@ -77,10 +77,6 @@ export const useCategoryTracks = () => {
     }
   };
 
-  // useHead({
-  //   title: "Избранное",
-  // });
-
   return {
     tracks,
     filteredTracks,
