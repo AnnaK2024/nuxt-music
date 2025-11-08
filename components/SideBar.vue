@@ -1,11 +1,13 @@
 <template>
   <div class="main__sidebar sidebar">
     <div class="sidebar__personal">
-      <p class="sidebar__personal-name">{{ userStore.username || "Гость" }}</p>
-      <div class="sidebar__icon" @click="userStore.logout">
-        <svg>
-          <use xlink:href="/icons/sprite.svg#logout" />
-        </svg>
+      <p class="sidebar__personal-name">{{ userStore.username }}</p>
+      <div class="sidebar__icon">
+        <NuxtLink to="#" @click="logout">
+          <svg>
+            <use xlink:href="/icons/sprite.svg#logout" />
+          </svg>
+        </NuxtLink>
       </div>
     </div>
     <div class="sidebar__block">
@@ -21,7 +23,6 @@
               :src="playlist.image"
               :alt="playlist.name"
               :placeholder="[15]"
-              
             />
           </nuxt-link>
         </div>
@@ -31,9 +32,11 @@
 </template>
 
 <script setup>
-import { useUserStore } from "@/stores/user";
+import { useUserStore } from "~/stores/user";
+import { useAuth } from "~/composables/useAuth";
 
 const userStore = useUserStore();
+const { logout } = useAuth();
 
 const playlists = [
   { id: 2, name: "day's playlist", image: "/img/playlist01.png" },
