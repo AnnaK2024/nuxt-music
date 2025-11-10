@@ -186,26 +186,28 @@ const handleLike = async () => {
 
 .pulse-dot {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 50%;
+  left: 50%;
   width: 10px;
   height: 10px;
   background-color: #ad61ff;
   border-radius: 50%;
+  transform: translate(-50%, -50%);
   animation: pulse 1.5s infinite;
 }
 
+
 @keyframes pulse {
   0% {
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
   50% {
-    transform: scale(1.5);
-    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.7;
   }
   100% {
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
 }

@@ -58,7 +58,7 @@ describe("Player Store - Getters (чистые функции)", () => {
         { id: "1", name: "Track 1", url: "url1" },
         { id: "2", name: "Track 2", url: "url2" },
       ];
-      store.currentTrack = store.playlist[1]; // последний
+      store.currentTrack = store.playlist[1];
       store.isShuffle = false;
       store.isRepeatPlaylist = false;
 
@@ -137,42 +137,48 @@ describe("Player Store - Actions (чистые функции без побоч�
   });
 
   describe("setPlaylist", () => {
-    it("должна установить плейлист", () => {
+    it("должна установить плейлист и контекст", () => {
       const store = usePlayerStore();
       const tracks = [
         { id: "1", name: "Track 1", url: "url1" },
         { id: "2", name: "Track 2", url: "url2" },
       ];
 
-      store.setPlaylist(tracks);
+      store.setPlaylist(tracks, "test-context");
 
       expect(store.playlist).toHaveLength(2);
       expect(store.playlist[0].id).toBe("1");
+      expect(store.playlistContext).toBe("test-context");
+      expect(store.currentTrack).toBeNull();
     });
 
-    it("должна установить первый трек как текущий по умолчанию", () => {
+    it("должна очистить текущий трек если его нет в новом плейлисте", () => {
       const store = usePlayerStore();
-      const tracks = [
+      store.currentTrack = { id: "old", name: "Old Track", url: "old-url" };
+
+      const newTracks = [
         { id: "1", name: "Track 1", url: "url1" },
         { id: "2", name: "Track 2", url: "url2" },
       ];
 
-      store.setPlaylist(tracks);
+      store.setPlaylist(newTracks);
 
-      expect(store.currentTrack?.id).toBe("1");
+      expect(store.currentTrack).toBeNull();
     });
 
-    it("должна установить трек по startIndex", () => {
+    it("должна сохранить текущий трек если он есть в новом плейлисте", () => {
       const store = usePlayerStore();
-      const tracks = [
+      const currentTrack = { id: "1", name: "Track 1", url: "url1" };
+      store.currentTrack = currentTrack;
+
+      const newTracks = [
         { id: "1", name: "Track 1", url: "url1" },
         { id: "2", name: "Track 2", url: "url2" },
-        { id: "3", name: "Track 3", url: "url3" },
       ];
 
-      store.setPlaylist(tracks, 2);
+      store.setPlaylist(newTracks);
 
-      expect(store.currentTrack?.id).toBe("3");
+      expect(store.currentTrack).toStrictEqual(currentTrack);
     });
 
     it("должна обработать пустой плейлист", () => {
@@ -185,14 +191,21 @@ describe("Player Store - Actions (чистые функции без побоч�
       expect(store.currentTrack).toBeNull();
     });
 
-    it("должна скопировать массив (не ссылку)", () => {
+    it("должна сохранить текущий трек при установке того же плейлиста", () => {
       const store = usePlayerStore();
-      const tracks = [{ id: "1", name: "Track 1", url: "url1" }];
+      const tracks = [
+        { id: "1", name: "Track 1", url: "url1" },
+        { id: "2", name: "Track 2", url: "url2" },
+      ];
 
       store.setPlaylist(tracks);
-      tracks.push({ id: "2", name: "Track 2", url: "url2" });
+      store.setCurrentTrackByIndex(1);
 
-      expect(store.playlist).toHaveLength(1);
+      const currentTrackBefore = store.currentTrack;
+
+      store.setPlaylist(tracks);
+
+      expect(store.currentTrack).toStrictEqual(currentTrackBefore);
     });
   });
 
