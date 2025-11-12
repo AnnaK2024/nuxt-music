@@ -13,10 +13,10 @@
       >
         <span class="filter__button-text">исполнителю</span>
         <span
-          v-show="activeDropdown === 'author' || !!tracksStore.filters.author"
+          v-show="activeDropdown === 'author' && !tracksStore.filters.author"
           class="filter__badge"
         >
-          {{ badgeCount("author") || 0 }}
+          {{ tracksStore.availableAuthors?.length || 0 }}
         </span>
       </div>
 
@@ -52,10 +52,10 @@
       >
         <span class="filter__button-text">году выпуска</span>
         <span
-          v-show="activeDropdown === 'year' || !!tracksStore.filters.year"
+          v-show="activeDropdown === 'year' && !tracksStore.filters.year"
           class="filter__badge"
         >
-          {{ badgeCount("year") || 0 }}
+          {{ tracksStore.availableYears?.length || 0 }}
         </span>
       </div>
 
@@ -91,10 +91,10 @@
       >
         <span class="filter__button-text">жанру</span>
         <span
-          v-show="activeDropdown === 'genre' || !!tracksStore.filters.genre"
+          v-show="activeDropdown === 'genre' && !tracksStore.filters.genre"
           class="filter__badge"
         >
-          {{ badgeCount("genre") || 0 }}
+          {{ tracksStore.availableGenres?.length || 0 }}
         </span>
       </div>
 
@@ -184,38 +184,6 @@ const isActive = (kind, value) => {
   const normalizedValue =
     kind === "genre" ? String(value).toLowerCase().trim() : String(value);
   return String(current) === normalizedValue;
-};
-
-const badgeCount = (kind) => {
-  const filterValue = tracksStore.filters[kind];
-
-  if (!filterValue) {
-    const availableKey = `available${
-      kind.charAt(0).toUpperCase() + kind.slice(1)
-    }s`;
-    return tracksStore[availableKey]?.length || 0;
-  } else {
-    return tracksStore.tracks.filter((track) => {
-      if (kind === "author") {
-        const author = track?.author
-          ? String(track.author).trim()
-          : "Неизвестно";
-        return author === filterValue;
-      }
-      if (kind === "year") {
-        const year = extractYearFromReleaseDate(track?.release_date);
-        return year === filterValue;
-      }
-      if (kind === "genre") {
-        const targetGenre = filterValue;
-        if (Array.isArray(track?.genre)) {
-          return track.genre.some((g) => normalizeGenreName(g) === targetGenre);
-        }
-        return normalizeGenreName(track?.genre) === targetGenre;
-      }
-      return false;
-    }).length;
-  }
 };
 </script>
 
