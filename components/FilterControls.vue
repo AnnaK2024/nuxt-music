@@ -12,11 +12,8 @@
         @click="toggleDropdown('author')"
       >
         <span class="filter__button-text">исполнителю</span>
-        <span
-          v-show="activeDropdown === 'author' && !tracksStore.filters.author"
-          class="filter__badge"
-        >
-          {{ tracksStore.availableAuthors?.length || 0 }}
+        <span v-show="!!tracksStore.filters.author" class="filter__badge">
+          {{ tracksStore.filteredTracks?.length || 0 }}
         </span>
       </div>
 
@@ -51,11 +48,8 @@
         @click="toggleDropdown('year')"
       >
         <span class="filter__button-text">году выпуска</span>
-        <span
-          v-show="activeDropdown === 'year' && !tracksStore.filters.year"
-          class="filter__badge"
-        >
-          {{ tracksStore.availableYears?.length || 0 }}
+        <span v-show="!!tracksStore.filters.year" class="filter__badge">
+          {{ tracksStore.filteredTracks?.length || 0 }}
         </span>
       </div>
 
@@ -90,11 +84,8 @@
         @click="toggleDropdown('genre')"
       >
         <span class="filter__button-text">жанру</span>
-        <span
-          v-show="activeDropdown === 'genre' && !tracksStore.filters.genre"
-          class="filter__badge"
-        >
-          {{ tracksStore.availableGenres?.length || 0 }}
+        <span v-show="!!tracksStore.filters.genre" class="filter__badge">
+          {{ tracksStore.filteredTracks?.length || 0 }}
         </span>
       </div>
 
